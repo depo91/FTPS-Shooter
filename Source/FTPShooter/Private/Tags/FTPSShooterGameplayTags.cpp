@@ -1,4 +1,4 @@
-#include "Tags/ShooterGameplayTags.h"
+#include "Tags/FTPSShooterGameplayTags.h"
 
 namespace ShooterTags
 {

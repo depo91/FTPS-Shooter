@@ -1,17 +1,17 @@
-﻿// Copyright Epic Games, Inc. All Rights Reserved.
+// Copyright Epic Games, Inc. All Rights Reserved.
 
 
-#include "Elimination/EliminationComponent.h"
+#include "Elimination/FTPSEliminationComponent.h"
 
 #include "Engine/World.h"
-#include "Game/ShooterGameStateBase.h"
+#include "Game/FTPSShooterGameStateBase.h"
 #include "GameFramework/Pawn.h"
 #include "Kismet/GameplayStatics.h"
-#include "Player/ShooterPlayerState.h"
-#include "ShooterTypes/ShooterTypes.h"
+#include "Player/FTPSShooterPlayerState.h"
+#include "ShooterTypes/FTPSShooterTypes.h"
 
 
-UEliminationComponent::UEliminationComponent()
+UFTPSEliminationComponent::UFTPSEliminationComponent()
 {
 	PrimaryComponentTick.bCanEverTick = false;
 	SequentialElimInterval = 2.f;
@@ -21,16 +21,16 @@ UEliminationComponent::UEliminationComponent()
 	ElimsNeededForStreak = 5;
 }
 
-void UEliminationComponent::OnRoundReported(AActor* Attacker, AActor* Victim, bool bHit, bool bHeadShot, bool bLethal)
+void UFTPSEliminationComponent::OnRoundReported(AActor* Attacker, AActor* Victim, bool bHit, bool bHeadShot, bool bLethal)
 {
-	AShooterPlayerState* AttackerPS = GetPlayerStateFromActor(Attacker);
+	AFTPSShooterPlayerState* AttackerPS = GetPlayerStateFromActor(Attacker);
 	if (!IsValid(AttackerPS)) return;
 	
 	ProcessHitOrMiss(bHit, AttackerPS);
 	
 	if (!bHit) return; // Early return if it was a miss
 	
-	AShooterPlayerState* VictimPS = GetPlayerStateFromActor(Victim);
+	AFTPSShooterPlayerState* VictimPS = GetPlayerStateFromActor(Victim);
 	if (!IsValid(VictimPS)) return;
 	
 	if (bLethal)
@@ -39,7 +39,7 @@ void UEliminationComponent::OnRoundReported(AActor* Attacker, AActor* Victim, bo
 	}
 }
 
-void UEliminationComponent::ProcessElimination(bool bHeadShot, AShooterPlayerState* AttackerPS, AShooterPlayerState* VictimPS)
+void UFTPSEliminationComponent::ProcessElimination(bool bHeadShot, AFTPSShooterPlayerState* AttackerPS, AFTPSShooterPlayerState* VictimPS)
 {
 	AttackerPS->AddScoredElim();
 	VictimPS->AddDefeat();
@@ -50,7 +50,7 @@ void UEliminationComponent::ProcessElimination(bool bHeadShot, AShooterPlayerSta
 	ProcessSequentialEliminations(SpecialElimType, AttackerPS);
 	ProcessStreaks(SpecialElimType, AttackerPS, VictimPS);
 
-	AShooterGameStateBase* GameState = Cast<AShooterGameStateBase>(UGameplayStatics::GetGameState(AttackerPS));
+	AFTPSShooterGameStateBase* GameState = Cast<AFTPSShooterGameStateBase>(UGameplayStatics::GetGameState(AttackerPS));
 	if (IsValid(GameState))
 	{
 		HandleFirstBlood(GameState, SpecialElimType, AttackerPS);
@@ -67,8 +67,8 @@ void UEliminationComponent::ProcessElimination(bool bHeadShot, AShooterPlayerSta
 	}
 }
 
-void UEliminationComponent::ProcessHeadshot(bool bHeadShot, ESpecialElimType& OutElimType,
-	AShooterPlayerState* AttackerPS)
+void UFTPSEliminationComponent::ProcessHeadshot(bool bHeadShot, ESpecialElimType& OutElimType,
+	AFTPSShooterPlayerState* AttackerPS)
 {
 	if (bHeadShot)
 	{
@@ -77,8 +77,8 @@ void UEliminationComponent::ProcessHeadshot(bool bHeadShot, ESpecialElimType& Ou
 	}
 }
 
-void UEliminationComponent::ProcessSequentialEliminations(ESpecialElimType& OutElimType,
-	AShooterPlayerState* AttackerPS)
+void UFTPSEliminationComponent::ProcessSequentialEliminations(ESpecialElimType& OutElimType,
+	AFTPSShooterPlayerState* AttackerPS)
 {
 	const float CurrentTime = GetWorld()->GetTimeSeconds();
 	if (CurrentTime - LastElimTime <= SequentialElimInterval)
@@ -98,8 +98,8 @@ void UEliminationComponent::ProcessSequentialEliminations(ESpecialElimType& OutE
 	}
 }
 
-void UEliminationComponent::ProcessStreaks(ESpecialElimType& OutElimType, AShooterPlayerState* AttackerPS,
-	AShooterPlayerState* VictimPS)
+void UFTPSEliminationComponent::ProcessStreaks(ESpecialElimType& OutElimType, AFTPSShooterPlayerState* AttackerPS,
+	AFTPSShooterPlayerState* VictimPS)
 {
 	++Streak;
 	if (Streak >= ElimsNeededForStreak)
@@ -123,8 +123,8 @@ void UEliminationComponent::ProcessStreaks(ESpecialElimType& OutElimType, AShoot
 	VictimPS->SetLastAttacker(AttackerPS);
 }
 
-void UEliminationComponent::HandleFirstBlood(AShooterGameStateBase* GameState, ESpecialElimType& OutElimType,
-	AShooterPlayerState* AttackerPS)
+void UFTPSEliminationComponent::HandleFirstBlood(AFTPSShooterGameStateBase* GameState, ESpecialElimType& OutElimType,
+	AFTPSShooterPlayerState* AttackerPS)
 {
 	if (!GameState->HasFirstBloodBeenHad())
 	{
@@ -133,10 +133,10 @@ void UEliminationComponent::HandleFirstBlood(AShooterGameStateBase* GameState, E
 	}
 }
 
-void UEliminationComponent::UpdateLeaderStatus(AShooterGameStateBase* GameState, ESpecialElimType& OutElimType,
-	AShooterPlayerState* AttackerPS, AShooterPlayerState* VictimPS)
+void UFTPSEliminationComponent::UpdateLeaderStatus(AFTPSShooterGameStateBase* GameState, ESpecialElimType& OutElimType,
+	AFTPSShooterPlayerState* AttackerPS, AFTPSShooterPlayerState* VictimPS)
 {
-	AShooterPlayerState* LastLeader =  GameState->GetSoleLeader();
+	AFTPSShooterPlayerState* LastLeader =  GameState->GetSoleLeader();
 	const bool bAttackerWasTiedForTheLead = GameState->IsTiedForTheLead(AttackerPS);
 	GameState->UpdateLeader();
 	if (!bAttackerWasTiedForTheLead && GameState->IsTiedForTheLead(AttackerPS))
@@ -162,12 +162,12 @@ void UEliminationComponent::UpdateLeaderStatus(AShooterGameStateBase* GameState,
 	}
 }
 
-bool UEliminationComponent::HasSpecialElimTypes(const ESpecialElimType& SpecialElimType) const
+bool UFTPSEliminationComponent::HasSpecialElimTypes(const ESpecialElimType& SpecialElimType) const
 {
 	return static_cast<uint16>(SpecialElimType) != 0;
 }
 
-void UEliminationComponent::ProcessHitOrMiss(bool bHit, AShooterPlayerState* AttackerPS)
+void UFTPSEliminationComponent::ProcessHitOrMiss(bool bHit, AFTPSShooterPlayerState* AttackerPS)
 {
 	if (bHit)
 	{
@@ -179,12 +179,12 @@ void UEliminationComponent::ProcessHitOrMiss(bool bHit, AShooterPlayerState* Att
 	}
 }
 
-AShooterPlayerState* UEliminationComponent::GetPlayerStateFromActor(AActor* Actor)
+AFTPSShooterPlayerState* UFTPSEliminationComponent::GetPlayerStateFromActor(AActor* Actor)
 {
 	APawn* Pawn = Cast<APawn>(Actor);
 	if (IsValid(Pawn))
 	{
-		return Pawn->GetPlayerState<AShooterPlayerState>();
+		return Pawn->GetPlayerState<AFTPSShooterPlayerState>();
 	}
 	return nullptr;
 }

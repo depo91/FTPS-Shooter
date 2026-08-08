@@ -1,17 +1,17 @@
-﻿// Copyright Epic Games, Inc. All Rights Reserved.
+// Copyright Epic Games, Inc. All Rights Reserved.
 
 #pragma once
 
 #include "CoreMinimal.h"
 #include "Blueprint/UserWidget.h"
-#include "ShooterTypes/ShooterTypes.h"
-#include "ShooterReticle.generated.h"
+#include "ShooterTypes/FTPSShooterTypes.h"
+#include "FTPSShooterReticle.generated.h"
 
-class AWeapon;
+class AFTPSWeapon;
 class UImage;
 
 UCLASS()
-class FTPSHOOTER_API UShooterReticle : public UUserWidget
+class FTPSHOOTER_API UFTPSShooterReticle : public UUserWidget
 {
 	GENERATED_BODY()
 public:
@@ -43,7 +43,7 @@ private:
 	void OnPossessedPawnChanged(APawn* OldPawn, APawn* NewPawn);
 	
 	UFUNCTION()
-	void OnWeaponFirstReplicated(AWeapon* Weapon, bool bIsTargetingPlayer);
+	void OnWeaponFirstReplicated(AFTPSWeapon* Weapon, bool bIsTargetingPlayer);
 	
 	UFUNCTION()
 	void OnReticleChanged(UMaterialInstanceDynamic* ReticleDynMatInst, const FReticleParams& ReticleParams, bool bCurrentlyTargetingPlayer);

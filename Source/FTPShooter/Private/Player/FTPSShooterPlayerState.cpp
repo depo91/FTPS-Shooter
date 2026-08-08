@@ -1,13 +1,13 @@
-﻿// Copyright Epic Games, Inc. All Rights Reserved.
+// Copyright Epic Games, Inc. All Rights Reserved.
 
 
-#include "Player/ShooterPlayerState.h"
+#include "Player/FTPSShooterPlayerState.h"
 
 #include "TimerManager.h"
-#include "Data/SpecialElimData.h"
-#include "UI/Elims/SpecialElim.h"
+#include "Data/FTPSSpecialElimData.h"
+#include "UI/Elims/FTPSSpecialElim.h"
 
-AShooterPlayerState::AShooterPlayerState()
+AFTPSShooterPlayerState::AFTPSShooterPlayerState()
 {
 	SetNetUpdateFrequency(100.f);
 	
@@ -27,32 +27,32 @@ AShooterPlayerState::AShooterPlayerState()
 	ElimDisplayTime = 0.5f;
 }
 
-void AShooterPlayerState::AddScoredElim()
+void AFTPSShooterPlayerState::AddScoredElim()
 {
 	++ScoredElims;
 }
 
-void AShooterPlayerState::AddDefeat()
+void AFTPSShooterPlayerState::AddDefeat()
 {
 	++Defeats;
 }
 
-void AShooterPlayerState::AddHit()
+void AFTPSShooterPlayerState::AddHit()
 {
 	++Hits;
 }
 
-void AShooterPlayerState::AddMiss()
+void AFTPSShooterPlayerState::AddMiss()
 {
 	++Misses;
 }
 
-void AShooterPlayerState::AddHeadShotElim()
+void AFTPSShooterPlayerState::AddHeadShotElim()
 {
 	++HeadShotElims;
 }
 
-void AShooterPlayerState::AddSequentialElim(int32 SequenceCount)
+void AFTPSShooterPlayerState::AddSequentialElim(int32 SequenceCount)
 {
 	if (SequentialElims.Contains(SequenceCount))
 	{
@@ -76,7 +76,7 @@ void AShooterPlayerState::AddSequentialElim(int32 SequenceCount)
 	}
 }
 
-void AShooterPlayerState::UpdateHighestStreak(int32 StreakCount)
+void AFTPSShooterPlayerState::UpdateHighestStreak(int32 StreakCount)
 {
 	if (StreakCount > HighestStreak)
 	{
@@ -84,57 +84,57 @@ void AShooterPlayerState::UpdateHighestStreak(int32 StreakCount)
 	}
 }
 
-void AShooterPlayerState::AddRevengeElim()
+void AFTPSShooterPlayerState::AddRevengeElim()
 {
 	++RevengeElims;
 }
 
-void AShooterPlayerState::AddDethroneElim()
+void AFTPSShooterPlayerState::AddDethroneElim()
 {
 	++DethroneElims;
 }
 
-void AShooterPlayerState::AddShowStopperElim()
+void AFTPSShooterPlayerState::AddShowStopperElim()
 {
 	++ShowStopperElims;
 }
 
-void AShooterPlayerState::GotFirstBlood()
+void AFTPSShooterPlayerState::GotFirstBlood()
 {
 	bFirstBlood = true;
 }
 
-void AShooterPlayerState::IsNowWinner()
+void AFTPSShooterPlayerState::IsNowWinner()
 {
 	bWinner = true;
 }
 
-void AShooterPlayerState::SetOnStreak(bool bIsOnStreak)
+void AFTPSShooterPlayerState::SetOnStreak(bool bIsOnStreak)
 {
 	bOnStreak = bIsOnStreak;
 }
 
-void AShooterPlayerState::SetLastAttacker(APlayerState* Attacker)
+void AFTPSShooterPlayerState::SetLastAttacker(APlayerState* Attacker)
 {
 	LastAttacker = Attacker;
 }
 
-bool AShooterPlayerState::IsOnStreak() const
+bool AFTPSShooterPlayerState::IsOnStreak() const
 {
 	return bOnStreak;
 }
 
-APlayerState* AShooterPlayerState::GetLastAttacker() const
+APlayerState* AFTPSShooterPlayerState::GetLastAttacker() const
 {
 	return LastAttacker.IsValid() ? LastAttacker.Get() : nullptr;
 }
 
-int32 AShooterPlayerState::GetScoredElims() const
+int32 AFTPSShooterPlayerState::GetScoredElims() const
 {
 	return ScoredElims;
 }
 
-TArray<ESpecialElimType> AShooterPlayerState::DecodeElimBitmask(ESpecialElimType ElimTypeBitmask)
+TArray<ESpecialElimType> AFTPSShooterPlayerState::DecodeElimBitmask(ESpecialElimType ElimTypeBitmask)
 {
 	TArray<ESpecialElimType> ValidElims;
 	
@@ -152,12 +152,12 @@ TArray<ESpecialElimType> AShooterPlayerState::DecodeElimBitmask(ESpecialElimType
 	return ValidElims;
 }
 
-void AShooterPlayerState::Client_ScoredElim_Implementation(int32 ElimScore)
+void AFTPSShooterPlayerState::Client_ScoredElim_Implementation(int32 ElimScore)
 {
 	OnScoreChanged.Broadcast(ElimScore);
 }
 
-void AShooterPlayerState::Client_SpecialElim_Implementation(const ESpecialElimType& SpecialElim,
+void AFTPSShooterPlayerState::Client_SpecialElim_Implementation(const ESpecialElimType& SpecialElim,
 	int32 SequentialElimCount, int32 StreakCount, int32 ElimScore)
 {
 	ensure(IsValid(SpecialElimData));
@@ -186,7 +186,7 @@ void AShooterPlayerState::Client_SpecialElim_Implementation(const ESpecialElimTy
 	}
 }
 
-void AShooterPlayerState::ProcessNextSpecialElim()
+void AFTPSShooterPlayerState::ProcessNextSpecialElim()
 {
 	FSpecialElimInfo ElimInfo;
 	if (SpecialElimQueue.Dequeue(ElimInfo))
@@ -197,7 +197,7 @@ void AShooterPlayerState::ProcessNextSpecialElim()
 		GetWorldTimerManager().SetTimerForNextTick([this]()
 		{
 			FTimerHandle TimerHandle;
-			GetWorldTimerManager().SetTimer(TimerHandle, this, &AShooterPlayerState::ProcessNextSpecialElim, ElimDisplayTime, false);
+			GetWorldTimerManager().SetTimer(TimerHandle, this, &AFTPSShooterPlayerState::ProcessNextSpecialElim, ElimDisplayTime, false);
 		});
 	}
 	else
@@ -206,7 +206,7 @@ void AShooterPlayerState::ProcessNextSpecialElim()
 	}
 }
 
-void AShooterPlayerState::ShowSpecialElim(const FSpecialElimInfo& ElimMessageInfo)
+void AFTPSShooterPlayerState::ShowSpecialElim(const FSpecialElimInfo& ElimMessageInfo)
 {
 	FString ElimMessageString = ElimMessageInfo.ElimMessage;
 	if (ElimMessageInfo.ElimType == ESpecialElimType::Sequential)
@@ -220,7 +220,7 @@ void AShooterPlayerState::ShowSpecialElim(const FSpecialElimInfo& ElimMessageInf
 	
 	if (IsValid(SpecialElimWidgetClass))
 	{
-		USpecialElim* ElimWidget = CreateWidget<USpecialElim>(GetPlayerController(), SpecialElimWidgetClass);
+		UFTPSSpecialElim* ElimWidget = CreateWidget<UFTPSSpecialElim>(GetPlayerController(), SpecialElimWidgetClass);
 		if (IsValid(ElimWidget))
 		{
 			ElimWidget->InitializeWidget(ElimMessageString, ElimMessageInfo.ElimIcon);
@@ -229,14 +229,14 @@ void AShooterPlayerState::ShowSpecialElim(const FSpecialElimInfo& ElimMessageInf
 	}
 }
 
-void AShooterPlayerState::Client_LostTheLead_Implementation()
+void AFTPSShooterPlayerState::Client_LostTheLead_Implementation()
 {
 	ensure(IsValid(SpecialElimData));
 	FSpecialElimInfo& ElimMessageInfo = SpecialElimData->SpecialElimInfo.FindChecked(ESpecialElimType::LostTheLead);
 	
 	if (IsValid(SpecialElimWidgetClass))
 	{
-		USpecialElim* ElimWidget = CreateWidget<USpecialElim>(GetPlayerController(), SpecialElimWidgetClass);
+		UFTPSSpecialElim* ElimWidget = CreateWidget<UFTPSSpecialElim>(GetPlayerController(), SpecialElimWidgetClass);
 		if (IsValid(ElimWidget))
 		{
 			ElimWidget->InitializeWidget(ElimMessageInfo.ElimMessage, ElimMessageInfo.ElimIcon);

@@ -1,11 +1,11 @@
-﻿// Copyright Epic Games, Inc. All Rights Reserved.
+// Copyright Epic Games, Inc. All Rights Reserved.
 
 #pragma once
 
 #include "CoreMinimal.h"
 #include "GameplayTagContainer.h"
 #include "Engine/DataAsset.h"
-#include "WeaponData.generated.h"
+#include "FTPSWeaponData.generated.h"
 
 class UAnimMontage;
 class UBlendSpace;
@@ -57,7 +57,7 @@ struct FMontageData
 };
 
 UCLASS()
-class FTPSHOOTER_API UWeaponData : public UDataAsset
+class FTPSHOOTER_API UFTPSWeaponData : public UDataAsset
 {
 	GENERATED_BODY()
 public:

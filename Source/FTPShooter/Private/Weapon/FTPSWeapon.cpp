@@ -1,12 +1,12 @@
-﻿// Copyright Epic Games, Inc. All Rights Reserved.
+// Copyright Epic Games, Inc. All Rights Reserved.
 
-#include "Weapon/Weapon.h"
+#include "Weapon/FTPSWeapon.h"
 #include "Components/SkeletalMeshComponent.h"
 #include "GameFramework/Pawn.h"
-#include "Interfaces/PlayerInterface.h"
+#include "Interfaces/FTPSPlayerInterface.h"
 #include "Materials/MaterialInstanceDynamic.h"
 
-AWeapon::AWeapon()
+AFTPSWeapon::AFTPSWeapon()
 {
 	PrimaryActorTick.bCanEverTick = false;
 	bReplicates = true;
@@ -27,34 +27,34 @@ AWeapon::AWeapon()
 	Mesh3P->SetHiddenInGame(true);
 }
 
-USkeletalMeshComponent* AWeapon::GetMesh1P() const
+USkeletalMeshComponent* AFTPSWeapon::GetMesh1P() const
 {
 	return Mesh1P;
 }
 
-USkeletalMeshComponent* AWeapon::GetMesh3P() const
+USkeletalMeshComponent* AFTPSWeapon::GetMesh3P() const
 {
 	return Mesh3P;
 }
 
-void AWeapon::OnRep_Instigator()
+void AFTPSWeapon::OnRep_Instigator()
 {
 	Super::OnRep_Instigator();
 	AttachToOwningPawn();
 }
 
-void AWeapon::AttachToOwningPawn() const
+void AFTPSWeapon::AttachToOwningPawn() const
 {
 	APawn* OwningPawn = GetInstigator();
-	if (!IsValid(OwningPawn) || !OwningPawn->Implements<UPlayerInterface>())
+	if (!IsValid(OwningPawn) || !OwningPawn->Implements<UFTPSPlayerInterface>())
 	{
 		return;
 	}
 
 	SetMeshVisibilities(OwningPawn);
-	const FName AttachPoint = IPlayerInterface::Execute_GetWeaponAttachPoint(OwningPawn, WeaponType);
-	USkeletalMeshComponent* PawnMesh1P = IPlayerInterface::Execute_GetMesh1P(OwningPawn);
-	USkeletalMeshComponent* PawnMesh3P = IPlayerInterface::Execute_GetMesh3P(OwningPawn);
+	const FName AttachPoint = IFTPSPlayerInterface::Execute_GetWeaponAttachPoint(OwningPawn, WeaponType);
+	USkeletalMeshComponent* PawnMesh1P = IFTPSPlayerInterface::Execute_GetMesh1P(OwningPawn);
+	USkeletalMeshComponent* PawnMesh3P = IFTPSPlayerInterface::Execute_GetMesh3P(OwningPawn);
 
 	if (PawnMesh1P)
 	{
@@ -67,7 +67,7 @@ void AWeapon::AttachToOwningPawn() const
 	}
 }
 
-void AWeapon::BeginPlay()
+void AFTPSWeapon::BeginPlay()
 {
 	Super::BeginPlay();
 
@@ -82,7 +82,7 @@ void AWeapon::BeginPlay()
 	}
 }
 
-void AWeapon::SetMeshVisibilities(APawn* OwningPawn) const
+void AFTPSWeapon::SetMeshVisibilities(APawn* OwningPawn) const
 {
 	if (OwningPawn->IsLocallyControlled())
 	{

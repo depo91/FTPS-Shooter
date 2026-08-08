@@ -1,6 +1,6 @@
-﻿// Copyright Epic Games, Inc. All Rights Reserved.
+// Copyright Epic Games, Inc. All Rights Reserved.
 
-#include "Interfaces/PlayerInterface.h"
+#include "Interfaces/FTPSPlayerInterface.h"
 
-// Add default functionality here for any IPlayerInterface functions that are not pure virtual.
+// Add default functionality here for any IFTPSPlayerInterface functions that are not pure virtual.
 

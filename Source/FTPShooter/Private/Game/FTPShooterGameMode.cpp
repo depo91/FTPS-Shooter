@@ -2,14 +2,14 @@
 
 #include "Game/FTPShooterGameMode.h"
 #include "Character/FTPShooterCharacter.h"
-#include "Game/ShooterGameStateBase.h"
-#include "Player/ShooterPlayerController.h"
-#include "Player/ShooterPlayerState.h"
+#include "Game/FTPSShooterGameStateBase.h"
+#include "Player/FTPSShooterPlayerController.h"
+#include "Player/FTPSShooterPlayerState.h"
 
 AFTPShooterGameMode::AFTPShooterGameMode()
 {
 	DefaultPawnClass = AFTPShooterCharacter::StaticClass();
-	PlayerControllerClass = AShooterPlayerController::StaticClass();
-	PlayerStateClass = AShooterPlayerState::StaticClass();
-	GameStateClass = AShooterGameStateBase::StaticClass();
+	PlayerControllerClass = AFTPSShooterPlayerController::StaticClass();
+	PlayerStateClass = AFTPSShooterPlayerState::StaticClass();
+	GameStateClass = AFTPSShooterGameStateBase::StaticClass();
 }

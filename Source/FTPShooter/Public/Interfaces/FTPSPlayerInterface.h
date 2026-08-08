@@ -1,16 +1,16 @@
-﻿// Copyright Epic Games, Inc. All Rights Reserved.
+// Copyright Epic Games, Inc. All Rights Reserved.
 
 #pragma once
 
 #include "CoreMinimal.h"
 #include "UObject/Interface.h"
-#include "PlayerInterface.generated.h"
+#include "FTPSPlayerInterface.generated.h"
 
-class AWeapon;
+class AFTPSWeapon;
 struct FGameplayTag;
 // This class does not need to be modified.
 UINTERFACE()
-class UPlayerInterface : public UInterface
+class UFTPSPlayerInterface : public UInterface
 {
 	GENERATED_BODY()
 };
@@ -18,7 +18,7 @@ class UPlayerInterface : public UInterface
 /**
  * 
  */
-class FTPSHOOTER_API IPlayerInterface
+class FTPSHOOTER_API IFTPSPlayerInterface
 {
 	GENERATED_BODY()
 
@@ -38,7 +38,7 @@ public:
 	void WeaponReplicated();
 	
 	UFUNCTION(BlueprintNativeEvent, BlueprintCallable)
-	AWeapon* GetCurrentWeapon();
+	AFTPSWeapon* GetCurrentWeapon();
 	
 	UFUNCTION(BlueprintNativeEvent, BlueprintCallable)
 	int32 GetReserveAmmo() const;

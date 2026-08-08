@@ -1,16 +1,16 @@
-﻿// Copyright Epic Games, Inc. All Rights Reserved.
+// Copyright Epic Games, Inc. All Rights Reserved.
 
 
-#include "UI/ReserveAmmo.h"
+#include "UI/FTPSReserveAmmo.h"
 
 #include "Character/FTPShooterCharacter.h"
-#include "Combat/CombatComponent.h"
+#include "Combat/FTPSCombatComponent.h"
 #include "Components/Image.h"
 #include "Components/TextBlock.h"
 #include "Materials/MaterialInterface.h"
-#include "Weapon/Weapon.h"
+#include "Weapon/FTPSWeapon.h"
 
-void UReserveAmmo::NativeOnInitialized()
+void UFTPSReserveAmmo::NativeOnInitialized()
 {
 	Super::NativeOnInitialized();
 	
@@ -25,10 +25,10 @@ void UReserveAmmo::NativeOnInitialized()
 	
 	if (ShooterCharacter->HasWeaponFirstReplicated())
 	{
-		AWeapon* Weapon = IPlayerInterface::Execute_GetCurrentWeapon(ShooterCharacter);
+		AFTPSWeapon* Weapon = IFTPSPlayerInterface::Execute_GetCurrentWeapon(ShooterCharacter);
 		if (IsValid(Weapon))
 		{
-			OnCurrentReserveAmmoChanged(IPlayerInterface::Execute_GetReserveAmmo(ShooterCharacter), Weapon->Ammo, Weapon->WeaponIcon);
+			OnCurrentReserveAmmoChanged(IFTPSPlayerInterface::Execute_GetReserveAmmo(ShooterCharacter), Weapon->Ammo, Weapon->WeaponIcon);
 		}
 	}
 	else
@@ -37,21 +37,21 @@ void UReserveAmmo::NativeOnInitialized()
 	}
 	if (ShooterCharacter->HasAuthority())
 	{
-		AWeapon* Weapon = IPlayerInterface::Execute_GetCurrentWeapon(ShooterCharacter);
+		AFTPSWeapon* Weapon = IFTPSPlayerInterface::Execute_GetCurrentWeapon(ShooterCharacter);
 		if (!IsValid(Weapon)) return;
-		OnCurrentReserveAmmoChanged(IPlayerInterface::Execute_GetReserveAmmo(ShooterCharacter), Weapon->Ammo, Weapon->WeaponIcon);
+		OnCurrentReserveAmmoChanged(IFTPSPlayerInterface::Execute_GetReserveAmmo(ShooterCharacter), Weapon->Ammo, Weapon->WeaponIcon);
 	}
 }
 
-void UReserveAmmo::OnPossessedPawnChanged(APawn* OldPawn, APawn* NewPawn)
+void UFTPSReserveAmmo::OnPossessedPawnChanged(APawn* OldPawn, APawn* NewPawn)
 {
-	UCombatComponent* OldPawnCombat = UCombatComponent::FindCombatComponent(OldPawn);
+	UFTPSCombatComponent* OldPawnCombat = UFTPSCombatComponent::FindCombatComponent(OldPawn);
 	if (IsValid(OldPawnCombat))
 	{
 		OldPawnCombat->OnCurrentReserveAmmoChanged.RemoveDynamic(this, &ThisClass::OnCurrentReserveAmmoChanged);
 		OldPawnCombat->OnRoundFired.RemoveDynamic(this, &ThisClass::OnRoundFired);
 	}
-	UCombatComponent* NewPawnCombat = UCombatComponent::FindCombatComponent(NewPawn);
+	UFTPSCombatComponent* NewPawnCombat = UFTPSCombatComponent::FindCombatComponent(NewPawn);
 	if (IsValid(NewPawnCombat))
 	{
 		Image_WeaponIcon->SetRenderOpacity(1.f);
@@ -61,7 +61,7 @@ void UReserveAmmo::OnPossessedPawnChanged(APawn* OldPawn, APawn* NewPawn)
 	}
 }
 
-void UReserveAmmo::OnCurrentReserveAmmoChanged(int32 RoundsInReserve, int32 RoundsInWeapon, UMaterialInterface* WeaponIconMaterial)
+void UFTPSReserveAmmo::OnCurrentReserveAmmoChanged(int32 RoundsInReserve, int32 RoundsInWeapon, UMaterialInterface* WeaponIconMaterial)
 {
 	if (IsValid(WeaponIconMaterial))
 	{
@@ -80,7 +80,7 @@ void UReserveAmmo::OnCurrentReserveAmmoChanged(int32 RoundsInReserve, int32 Roun
 	}
 }
 
-void UReserveAmmo::OnRoundFired(int32 RoundsCurrent, int32 RoundsMax, int32 RoundsInReserve)
+void UFTPSReserveAmmo::OnRoundFired(int32 RoundsCurrent, int32 RoundsMax, int32 RoundsInReserve)
 {
 	if (IsValid(Text_Ammo))
 	{
@@ -89,10 +89,10 @@ void UReserveAmmo::OnRoundFired(int32 RoundsCurrent, int32 RoundsMax, int32 Roun
 	}
 }
 
-void UReserveAmmo::OnWeaponFirstReplicated(AWeapon* Weapon, bool bTargetingPlayer)
+void UFTPSReserveAmmo::OnWeaponFirstReplicated(AFTPSWeapon* Weapon, bool bTargetingPlayer)
 {
 	AFTPShooterCharacter* ShooterCharacter = Cast<AFTPShooterCharacter>(GetOwningPlayer()->GetPawn());
 	if (!IsValid(ShooterCharacter)) return;
 	
-	OnCurrentReserveAmmoChanged(IPlayerInterface::Execute_GetReserveAmmo(ShooterCharacter), Weapon->Ammo, Weapon->WeaponIcon);
+	OnCurrentReserveAmmoChanged(IFTPSPlayerInterface::Execute_GetReserveAmmo(ShooterCharacter), Weapon->Ammo, Weapon->WeaponIcon);
 }

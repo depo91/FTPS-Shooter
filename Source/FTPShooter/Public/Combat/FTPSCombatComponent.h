@@ -1,14 +1,14 @@
-﻿// Copyright Epic Games, Inc. All Rights Reserved.
+// Copyright Epic Games, Inc. All Rights Reserved.
 
 #pragma once
 
 #include "CoreMinimal.h"
 #include "Components/ActorComponent.h"
-#include "ShooterTypes/ShooterTypes.h"
-#include "CombatComponent.generated.h"
+#include "ShooterTypes/FTPSShooterTypes.h"
+#include "FTPSCombatComponent.generated.h"
 
-class UWeaponData;
-class AWeapon;
+class UFTPSWeaponData;
+class AFTPSWeapon;
 class UMaterialInterface;
 class UMaterialInstanceDynamic;
 
@@ -20,12 +20,12 @@ DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FAimingStatusChanged, bool, bIsAimin
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FTargetingPlayerStatusChanged, bool, bTargetingPlayer);
 
 UCLASS(ClassGroup=(Custom), meta=(BlueprintSpawnableComponent))
-class FTPSHOOTER_API UCombatComponent : public UActorComponent
+class FTPSHOOTER_API UFTPSCombatComponent : public UActorComponent
 {
 	GENERATED_BODY()
 
 public:
-	UCombatComponent();
+	UFTPSCombatComponent();
 
 	virtual void TickComponent(
 		float DeltaTime,
@@ -41,13 +41,13 @@ public:
 	void Initiate_Aim_Pressed();
 	void Initiate_Aim_Released();
 
-	UPROPERTY(EditDefaultsOnly, Category = "FPS|Weapon")
-	TObjectPtr<UWeaponData> WeaponData;
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "FPS|Weapon")
+	TObjectPtr<UFTPSWeaponData> WeaponData;
 
 	UFUNCTION(BlueprintPure, Category = "FPS|Combat")
-	static UCombatComponent* FindCombatComponent(const AActor* Actor)
+	static UFTPSCombatComponent* FindCombatComponent(const AActor* Actor)
 	{
-		return IsValid(Actor) ? Actor->FindComponentByClass<UCombatComponent>() : nullptr;
+		return IsValid(Actor) ? Actor->FindComponentByClass<UFTPSCombatComponent>() : nullptr;
 	}
 
 	UPROPERTY(BlueprintAssignable)
@@ -71,29 +71,43 @@ public:
 	UPROPERTY(BlueprintReadOnly, Category = "FPS|Combat")
 	bool bHitPlayer = false;
 
-	void Equip(AWeapon* Weapon);
+	void Equip(AFTPSWeapon* Weapon);
 	void SpawnInventory();
 	void DestroyInventory();
-	AWeapon* GetCurrentWeapon() const { return CurrentWeapon; }
+	AFTPSWeapon* GetCurrentWeapon() const { return CurrentWeapon; }
 	int32 GetReserveAmmo() const { return ReserveAmmo; }
 	void AddReserveAmmo(int32 AmmoAmount) { ReserveAmmo += FMath::Max(0, AmmoAmount); }
 
+	UPROPERTY(BlueprintReadOnly, ReplicatedUsing = OnRep_Aiming, Category = "FPS|Combat")
+	bool bAiming = false;
+
 protected:
-	AWeapon* SpawnWeapon(TSubclassOf<AWeapon> WeaponClass) const;
+	AFTPSWeapon* SpawnWeapon(TSubclassOf<AFTPSWeapon> WeaponClass) const;
+
+	UPROPERTY(Transient, BlueprintReadOnly, ReplicatedUsing = OnRep_CurrentWeapon)
+	TObjectPtr<AFTPSWeapon> CurrentWeapon;
 
 private:
 	UPROPERTY(EditDefaultsOnly, Category = "FPS|Weapon")
-	TSubclassOf<AWeapon> DefaultWeaponClass;
+	TSubclassOf<AFTPSWeapon> DefaultWeaponClass;
 
 	UPROPERTY(EditDefaultsOnly, Category = "FPS|Weapon")
-	TArray<TSubclassOf<AWeapon>> DefaultWeaponClasses;
+	TArray<TSubclassOf<AFTPSWeapon>> DefaultWeaponClasses;
 
 	UPROPERTY(EditDefaultsOnly, Category = "FPS|Weapon")
 	int32 ReserveAmmo = 90;
 
-	UPROPERTY(Transient)
-	TObjectPtr<AWeapon> CurrentWeapon;
+	UFUNCTION()
+	void OnRep_CurrentWeapon(AFTPSWeapon* LastWeapon);
+
+	UFUNCTION()
+	void OnRep_Aiming();
+
+	UFUNCTION(Server, Reliable)
+	void Server_Aim(bool bPressed);
+
+	void Local_Aim(bool bPressed);
 
 	UPROPERTY(Transient, Replicated)
-	TArray<AWeapon*> Inventory;
+	TArray<AFTPSWeapon*> Inventory;
 };

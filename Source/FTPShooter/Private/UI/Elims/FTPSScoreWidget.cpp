@@ -1,24 +1,24 @@
-﻿// Copyright Epic Games, Inc. All Rights Reserved.
+// Copyright Epic Games, Inc. All Rights Reserved.
 
 
-#include "UI/Elims/ScoreWidget.h"
+#include "UI/Elims/FTPSScoreWidget.h"
 
 #include "Components/TextBlock.h"
-#include "Player/ShooterPlayerController.h"
-#include "Player/ShooterPlayerState.h"
+#include "Player/FTPSShooterPlayerController.h"
+#include "Player/FTPSShooterPlayerState.h"
 
-void UScoreWidget::NativeOnInitialized()
+void UFTPSScoreWidget::NativeOnInitialized()
 {
 	Super::NativeOnInitialized();
 	
-	AShooterPlayerState* PS = GetPlayerState();
+	AFTPSShooterPlayerState* PS = GetPlayerState();
 	if (IsValid(PS))
 	{
 		PS->OnScoreChanged.AddDynamic(this, &ThisClass::OnScoreChanged);
 	}
 	else
 	{
-		AShooterPlayerController* PC = Cast<AShooterPlayerController>(GetOwningPlayer());
+		AFTPSShooterPlayerController* PC = Cast<AFTPSShooterPlayerController>(GetOwningPlayer());
 		if (IsValid(PC))
 		{
 			PC->OnPlayerStateReplicated.AddUniqueDynamic(this, &ThisClass::OnPlayerStateReplicated);
@@ -26,34 +26,34 @@ void UScoreWidget::NativeOnInitialized()
 	}
 }
 
-void UScoreWidget::OnPlayerStateReplicated()
+void UFTPSScoreWidget::OnPlayerStateReplicated()
 {
-	AShooterPlayerState* PS = GetPlayerState();
+	AFTPSShooterPlayerState* PS = GetPlayerState();
 	if (IsValid(PS))
 	{
 		PS->OnScoreChanged.AddDynamic(this, &ThisClass::OnScoreChanged);
 		OnScoreChanged(PS->GetScoredElims());
 	}
 	
-	AShooterPlayerController* PC = Cast<AShooterPlayerController>(GetOwningPlayer());
+	AFTPSShooterPlayerController* PC = Cast<AFTPSShooterPlayerController>(GetOwningPlayer());
 	if (IsValid(PC))
 	{
 		PC->OnPlayerStateReplicated.RemoveDynamic(this, &ThisClass::OnPlayerStateReplicated);
 	}
 }
 
-AShooterPlayerState* UScoreWidget::GetPlayerState() const
+AFTPSShooterPlayerState* UFTPSScoreWidget::GetPlayerState() const
 {
 	APlayerController* PC = GetOwningPlayer();
 	if (IsValid(PC))
 	{
-		return PC->GetPlayerState<AShooterPlayerState>();
+		return PC->GetPlayerState<AFTPSShooterPlayerState>();
 	}
 	
 	return nullptr;
 }
 
-void UScoreWidget::OnScoreChanged(int32 Score)
+void UFTPSScoreWidget::OnScoreChanged(int32 Score)
 {
 	if (IsValid(Text_Score))
 	{

@@ -1,13 +1,13 @@
-﻿// Copyright Epic Games, Inc. All Rights Reserved.
+// Copyright Epic Games, Inc. All Rights Reserved.
 
 #pragma once
 
 #include "CoreMinimal.h"
 #include "Components/ActorComponent.h"
 #include "GameFramework/Actor.h"
-#include "HealthComponent.generated.h"
+#include "FTPSHealthComponent.generated.h"
 
-DECLARE_DYNAMIC_MULTICAST_DELEGATE_FourParams(FHealthChanged, UHealthComponent*, HealthComponent, float, OldValue, float, NewValue, AActor*, Instigator);
+DECLARE_DYNAMIC_MULTICAST_DELEGATE_FourParams(FHealthChanged, UFTPSHealthComponent*, HealthComponent, float, OldValue, float, NewValue, AActor*, Instigator);
 DECLARE_DYNAMIC_MULTICAST_DELEGATE(FDeathStarted);
 
 UENUM(BlueprintType)
@@ -19,16 +19,16 @@ enum class EDeathState : uint8
 };
 
 UCLASS(ClassGroup=(Custom), meta=(BlueprintSpawnableComponent))
-class FTPSHOOTER_API UHealthComponent : public UActorComponent
+class FTPSHOOTER_API UFTPSHealthComponent : public UActorComponent
 {
 	GENERATED_BODY()
 
 public:
-	UHealthComponent();
+	UFTPSHealthComponent();
 	virtual void GetLifetimeReplicatedProps(TArray<class FLifetimeProperty>& OutLifetimeProps) const override;
 	
 	UFUNCTION(BlueprintPure, Category = "FPS|Health")
-	static UHealthComponent* FindHealthComponent(const AActor* Actor) { return IsValid(Actor) ? Actor->FindComponentByClass<UHealthComponent>() : nullptr; }
+	static UFTPSHealthComponent* FindHealthComponent(const AActor* Actor) { return IsValid(Actor) ? Actor->FindComponentByClass<UFTPSHealthComponent>() : nullptr; }
 	
 	UFUNCTION(BlueprintCallable)
 	float GetHealthNormalized() const;

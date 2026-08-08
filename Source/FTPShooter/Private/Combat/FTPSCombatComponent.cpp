@@ -1,19 +1,20 @@
-﻿// Copyright Epic Games, Inc. All Rights Reserved.
+// Copyright Epic Games, Inc. All Rights Reserved.
 
-#include "Combat/CombatComponent.h"
+#include "Combat/FTPSCombatComponent.h"
 #include "Engine/Engine.h"
 #include "GameFramework/Actor.h"
 #include "GameFramework/Pawn.h"
+#include "Interfaces/FTPSPlayerInterface.h"
 #include "Net/UnrealNetwork.h"
-#include "Weapon/Weapon.h"
+#include "Weapon/FTPSWeapon.h"
 
-UCombatComponent::UCombatComponent()
+UFTPSCombatComponent::UFTPSCombatComponent()
 {
 	PrimaryComponentTick.bCanEverTick = true;
 	SetIsReplicatedByDefault(true);
 }
 
-void UCombatComponent::TickComponent(
+void UFTPSCombatComponent::TickComponent(
 	float DeltaTime,
 	ELevelTick TickType,
 	FActorComponentTickFunction* ThisTickFunction)
@@ -21,14 +22,16 @@ void UCombatComponent::TickComponent(
 	Super::TickComponent(DeltaTime, TickType, ThisTickFunction);
 }
 
-void UCombatComponent::GetLifetimeReplicatedProps(TArray<class FLifetimeProperty>& OutLifetimeProps) const
+void UFTPSCombatComponent::GetLifetimeReplicatedProps(TArray<class FLifetimeProperty>& OutLifetimeProps) const
 {
 	Super::GetLifetimeReplicatedProps(OutLifetimeProps);
 
-	DOREPLIFETIME(UCombatComponent, Inventory);
+	DOREPLIFETIME(UFTPSCombatComponent, CurrentWeapon);
+	DOREPLIFETIME(UFTPSCombatComponent, Inventory);
+	DOREPLIFETIME_CONDITION(UFTPSCombatComponent, bAiming, COND_SkipOwner);
 }
 
-void UCombatComponent::Initiate_CycleWeapon()
+void UFTPSCombatComponent::Initiate_CycleWeapon()
 {
 	GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Cyan, TEXT("Initiate_CycleWeapon"), false);
 
@@ -42,7 +45,7 @@ void UCombatComponent::Initiate_CycleWeapon()
 	Equip(Inventory[NextIndex]);
 }
 
-void UCombatComponent::Initiate_FireWeapon_Pressed()
+void UFTPSCombatComponent::Initiate_FireWeapon_Pressed()
 {
 	GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Cyan, TEXT("Initiate_FireWeapon_Pressed"), false);
 
@@ -53,12 +56,12 @@ void UCombatComponent::Initiate_FireWeapon_Pressed()
 	}
 }
 
-void UCombatComponent::Initiate_FireWeapon_Released()
+void UFTPSCombatComponent::Initiate_FireWeapon_Released()
 {
 	GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Cyan, TEXT("Initiate_FireWeapon_Released"), false);
 }
 
-void UCombatComponent::Initiate_ReloadWeapon()
+void UFTPSCombatComponent::Initiate_ReloadWeapon()
 {
 	GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Cyan, TEXT("Initiate_ReloadWeapon"), false);
 
@@ -76,26 +79,47 @@ void UCombatComponent::Initiate_ReloadWeapon()
 	OnCurrentReserveAmmoChanged.Broadcast(ReserveAmmo, CurrentWeapon->Ammo, CurrentWeapon->WeaponIcon);
 }
 
-void UCombatComponent::Initiate_Aim_Pressed()
+void UFTPSCombatComponent::Initiate_Aim_Pressed()
 {
 	GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Cyan, TEXT("Initiate_Aim_Pressed"), false);
-	OnAimingStatusChanged.Broadcast(true);
+	Local_Aim(true);
+
+	if (AActor* OwnerActor = GetOwner(); IsValid(OwnerActor) && !OwnerActor->HasAuthority())
+	{
+		Server_Aim(true);
+	}
 }
 
-void UCombatComponent::Initiate_Aim_Released()
+void UFTPSCombatComponent::Initiate_Aim_Released()
 {
 	GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Cyan, TEXT("Initiate_Aim_Released"), false);
-	OnAimingStatusChanged.Broadcast(false);
+	Local_Aim(false);
+
+	if (AActor* OwnerActor = GetOwner(); IsValid(OwnerActor) && !OwnerActor->HasAuthority())
+	{
+		Server_Aim(false);
+	}
 }
 
-void UCombatComponent::Equip(AWeapon* Weapon)
+void UFTPSCombatComponent::Server_Aim_Implementation(bool bPressed)
+{
+	Local_Aim(bPressed);
+}
+
+void UFTPSCombatComponent::Local_Aim(bool bPressed)
+{
+	bAiming = bPressed;
+	OnAimingStatusChanged.Broadcast(bAiming);
+}
+
+void UFTPSCombatComponent::Equip(AFTPSWeapon* Weapon)
 {
 	if (!IsValid(Weapon))
 	{
 		return;
 	}
 
-	AWeapon* LastWeapon = CurrentWeapon;
+	AFTPSWeapon* LastWeapon = CurrentWeapon;
 	CurrentWeapon = Weapon;
 	CurrentWeapon->AttachToOwningPawn();
 
@@ -111,16 +135,16 @@ void UCombatComponent::Equip(AWeapon* Weapon)
 	OnTargetingPlayerStatusChanged.Broadcast(bHitPlayer);
 }
 
-void UCombatComponent::SpawnInventory()
+void UFTPSCombatComponent::SpawnInventory()
 {
 	if (!GetOwner() || GetOwner()->GetLocalRole() < ROLE_Authority)
 	{
 		return;
 	}
 
-	for (const TSubclassOf<AWeapon>& WeaponClass : DefaultWeaponClasses)
+	for (const TSubclassOf<AFTPSWeapon>& WeaponClass : DefaultWeaponClasses)
 	{
-		if (AWeapon* Weapon = SpawnWeapon(WeaponClass))
+		if (AFTPSWeapon* Weapon = SpawnWeapon(WeaponClass))
 		{
 			Inventory.AddUnique(Weapon);
 		}
@@ -128,7 +152,7 @@ void UCombatComponent::SpawnInventory()
 
 	if (*DefaultWeaponClass)
 	{
-		if (AWeapon* Weapon = SpawnWeapon(DefaultWeaponClass))
+		if (AFTPSWeapon* Weapon = SpawnWeapon(DefaultWeaponClass))
 		{
 			Inventory.AddUnique(Weapon);
 		}
@@ -141,9 +165,9 @@ void UCombatComponent::SpawnInventory()
 	}
 }
 
-void UCombatComponent::DestroyInventory()
+void UFTPSCombatComponent::DestroyInventory()
 {
-	for (AWeapon* Weapon : Inventory)
+	for (AFTPSWeapon* Weapon : Inventory)
 	{
 		if (IsValid(Weapon))
 		{
@@ -155,7 +179,37 @@ void UCombatComponent::DestroyInventory()
 	CurrentWeapon = nullptr;
 }
 
-AWeapon* UCombatComponent::SpawnWeapon(TSubclassOf<AWeapon> WeaponClass) const
+void UFTPSCombatComponent::OnRep_CurrentWeapon(AFTPSWeapon* LastWeapon)
+{
+	if (CurrentWeapon)
+	{
+		CurrentWeapon->AttachToOwningPawn();
+
+		if (LastWeapon && LastWeapon != CurrentWeapon)
+		{
+			LastWeapon->GetMesh1P()->SetHiddenInGame(true);
+			LastWeapon->GetMesh3P()->SetHiddenInGame(true);
+		}
+
+		OnReticleChanged.Broadcast(CurrentWeapon->GetReticleDynamicMaterialInstance(), CurrentWeapon->ReticleParams, bHitPlayer);
+		OnAmmoCounterChanged.Broadcast(CurrentWeapon->GetAmmoCounterDynamicMaterialInstance(), CurrentWeapon->Ammo, CurrentWeapon->MagCapacity);
+		OnCurrentReserveAmmoChanged.Broadcast(ReserveAmmo, CurrentWeapon->Ammo, CurrentWeapon->WeaponIcon);
+		OnTargetingPlayerStatusChanged.Broadcast(bHitPlayer);
+	}
+
+	if (AActor* OwnerActor = GetOwner();
+		IsValid(OwnerActor) && OwnerActor->GetClass()->ImplementsInterface(UFTPSPlayerInterface::StaticClass()))
+	{
+		IFTPSPlayerInterface::Execute_WeaponReplicated(OwnerActor);
+	}
+}
+
+void UFTPSCombatComponent::OnRep_Aiming()
+{
+	OnAimingStatusChanged.Broadcast(bAiming);
+}
+
+AFTPSWeapon* UFTPSCombatComponent::SpawnWeapon(TSubclassOf<AFTPSWeapon> WeaponClass) const
 {
 	AActor* OwningActor = GetOwner();
 	if (!IsValid(OwningActor) || !*WeaponClass)
@@ -173,5 +227,5 @@ AWeapon* UCombatComponent::SpawnWeapon(TSubclassOf<AWeapon> WeaponClass) const
 	SpawnParams.Instigator = Cast<APawn>(OwningActor);
 	SpawnParams.SpawnCollisionHandlingOverride = ESpawnActorCollisionHandlingMethod::AlwaysSpawn;
 
-	return GetWorld()->SpawnActor<AWeapon>(WeaponClass, SpawnParams);
+	return GetWorld()->SpawnActor<AFTPSWeapon>(WeaponClass, SpawnParams);
 }

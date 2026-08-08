@@ -3,9 +3,9 @@
 #include "Character/FTPShooterCharacter.h"
 #include "Engine/LocalPlayer.h"
 #include "Camera/CameraComponent.h"
-#include "Combat/CombatComponent.h"
+#include "Combat/FTPSCombatComponent.h"
 #include "Components/CapsuleComponent.h"
-#include "Data/WeaponData.h"
+#include "Data/FTPSWeaponData.h"
 #include "GameFramework/CharacterMovementComponent.h"
 #include "GameFramework/SpringArmComponent.h"
 #include "GameFramework/Controller.h"
@@ -13,7 +13,7 @@
 #include "EnhancedInputComponent.h"
 #include "InputCoreTypes.h"
 #include "FTPShooter.h"
-#include "Weapon/Weapon.h"
+#include "Weapon/FTPSWeapon.h"
 
 AFTPShooterCharacter::AFTPShooterCharacter()
 {
@@ -68,7 +68,7 @@ AFTPShooterCharacter::AFTPShooterCharacter()
 	FirstPersonMesh->SetRelativeLocation(FirstPersonMeshOffset);
 	FirstPersonMesh->SetVisibility(true, true);
 
-	Combat = CreateDefaultSubobject<UCombatComponent>(TEXT("Combat"));
+	Combat = CreateDefaultSubobject<UFTPSCombatComponent>(TEXT("Combat"));
 	Combat->SetIsReplicated(true);
 
 	TogglePerspectiveKey = EKeys::V;
@@ -123,7 +123,7 @@ void AFTPShooterCharacter::PossessedBy(AController* NewController)
 	{
 		Combat->SpawnInventory();
 
-		if (AWeapon* Weapon = Combat->GetCurrentWeapon())
+		if (AFTPSWeapon* Weapon = Combat->GetCurrentWeapon())
 		{
 			bWeaponFirstReplicated = true;
 			OnWeaponFirstReplicated.Broadcast(Weapon, Combat->bHitPlayer);
@@ -188,7 +188,7 @@ void AFTPShooterCharacter::WeaponReplicated_Implementation()
 	}
 }
 
-AWeapon* AFTPShooterCharacter::GetCurrentWeapon_Implementation()
+AFTPSWeapon* AFTPShooterCharacter::GetCurrentWeapon_Implementation()
 {
 	return Combat ? Combat->GetCurrentWeapon() : nullptr;
 }

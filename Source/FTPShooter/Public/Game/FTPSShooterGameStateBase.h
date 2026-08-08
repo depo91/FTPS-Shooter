@@ -4,27 +4,27 @@
 
 #include "CoreMinimal.h"
 #include "GameFramework/GameStateBase.h"
-#include "ShooterGameStateBase.generated.h"
+#include "FTPSShooterGameStateBase.generated.h"
 
-class AShooterPlayerState;
+class AFTPSShooterPlayerState;
 
 UCLASS()
-class FTPSHOOTER_API AShooterGameStateBase : public AGameStateBase
+class FTPSHOOTER_API AFTPSShooterGameStateBase : public AGameStateBase
 {
 	GENERATED_BODY()
 
 public:
 	bool HasFirstBloodBeenHad() const;
-	AShooterPlayerState* GetSoleLeader() const;
-	bool IsTiedForTheLead(const AShooterPlayerState* PlayerState) const;
+	AFTPSShooterPlayerState* GetSoleLeader() const;
+	bool IsTiedForTheLead(const AFTPSShooterPlayerState* PlayerState) const;
 	void UpdateLeader();
 
 private:
 	UPROPERTY()
-	TArray<TObjectPtr<AShooterPlayerState>> CurrentLeaders;
+	TArray<TObjectPtr<AFTPSShooterPlayerState>> CurrentLeaders;
 
 	UPROPERTY()
-	TObjectPtr<AShooterPlayerState> SoleLeader;
+	TObjectPtr<AFTPSShooterPlayerState> SoleLeader;
 
 	bool bFirstBloodBeenHad = false;
 };

@@ -1,13 +1,13 @@
-﻿// Copyright Epic Games, Inc. All Rights Reserved.
+// Copyright Epic Games, Inc. All Rights Reserved.
 
 
-#include "UI/Elims/SpecialElim.h"
+#include "UI/Elims/FTPSSpecialElim.h"
 
 #include "Blueprint/WidgetLayoutLibrary.h"
 #include "Components/Image.h"
 #include "Components/TextBlock.h"
 
-void USpecialElim::InitializeWidget(const FString& ElimMessage, UTexture2D* ElimTexture)
+void UFTPSSpecialElim::InitializeWidget(const FString& ElimMessage, UTexture2D* ElimTexture)
 {
 	if (IsValid(Text_ElimMessage))
 	{
@@ -19,7 +19,7 @@ void USpecialElim::InitializeWidget(const FString& ElimMessage, UTexture2D* Elim
 	}
 }
 
-void USpecialElim::CenterWidget(UUserWidget* Widget, float VerticalRatio)
+void UFTPSSpecialElim::CenterWidget(UUserWidget* Widget, float VerticalRatio)
 {
 	if (!IsValid(Widget)) return;
 	

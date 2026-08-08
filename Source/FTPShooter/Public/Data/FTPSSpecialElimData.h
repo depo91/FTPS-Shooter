@@ -1,11 +1,11 @@
-﻿// Copyright Epic Games, Inc. All Rights Reserved.
+// Copyright Epic Games, Inc. All Rights Reserved.
 
 #pragma once
 
 #include "CoreMinimal.h"
 #include "Engine/DataAsset.h"
-#include "ShooterTypes/ShooterTypes.h"
-#include "SpecialElimData.generated.h"
+#include "ShooterTypes/FTPSShooterTypes.h"
+#include "FTPSSpecialElimData.generated.h"
 
 class UTexture2D;
 
@@ -31,7 +31,7 @@ struct FSpecialElimInfo
 };
 
 UCLASS()
-class FTPSHOOTER_API USpecialElimData : public UDataAsset
+class FTPSHOOTER_API UFTPSSpecialElimData : public UDataAsset
 {
 	GENERATED_BODY()
 public:

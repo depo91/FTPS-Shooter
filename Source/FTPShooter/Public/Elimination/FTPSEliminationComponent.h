@@ -1,23 +1,23 @@
-﻿// Copyright Epic Games, Inc. All Rights Reserved.
+// Copyright Epic Games, Inc. All Rights Reserved.
 
 #pragma once
 
 #include "CoreMinimal.h"
 #include "Components/ActorComponent.h"
-#include "EliminationComponent.generated.h"
+#include "FTPSEliminationComponent.generated.h"
 
 
-class AShooterGameStateBase;
+class AFTPSShooterGameStateBase;
 enum class ESpecialElimType : uint16;
-class AShooterPlayerState;
+class AFTPSShooterPlayerState;
 
 UCLASS(ClassGroup=(Custom), meta=(BlueprintSpawnableComponent))
-class FTPSHOOTER_API UEliminationComponent : public UActorComponent
+class FTPSHOOTER_API UFTPSEliminationComponent : public UActorComponent
 {
 	GENERATED_BODY()
 
 public:
-	UEliminationComponent();
+	UFTPSEliminationComponent();
 	
 	UFUNCTION()
 	void OnRoundReported(AActor* Attacker, AActor* Victim, bool bHit, bool bHeadShot, bool bLethal);
@@ -33,13 +33,13 @@ private:
 	int32 SequentialElims;
 	int32 Streak;
 	
-	AShooterPlayerState* GetPlayerStateFromActor(AActor* Actor);
-	void ProcessHitOrMiss(bool bHit, AShooterPlayerState* AttackerPS);
-	void ProcessElimination(bool bHeadShot, AShooterPlayerState* AttackerPS, AShooterPlayerState* VictimPS);
-	void ProcessHeadshot(bool bHeadShot, ESpecialElimType& OutElimType, AShooterPlayerState* AttackerPS);
-	void ProcessSequentialEliminations(ESpecialElimType& OutElimType, AShooterPlayerState* AttackerPS);
-	void ProcessStreaks(ESpecialElimType& OutElimType, AShooterPlayerState* AttackerPS, AShooterPlayerState* VictimPS);
-	void HandleFirstBlood(AShooterGameStateBase* GameState, ESpecialElimType& OutElimType, AShooterPlayerState* AttackerPS);
-	void UpdateLeaderStatus(AShooterGameStateBase* GameState, ESpecialElimType& OutElimType, AShooterPlayerState* AttackerPS, AShooterPlayerState* VictimPS);
+	AFTPSShooterPlayerState* GetPlayerStateFromActor(AActor* Actor);
+	void ProcessHitOrMiss(bool bHit, AFTPSShooterPlayerState* AttackerPS);
+	void ProcessElimination(bool bHeadShot, AFTPSShooterPlayerState* AttackerPS, AFTPSShooterPlayerState* VictimPS);
+	void ProcessHeadshot(bool bHeadShot, ESpecialElimType& OutElimType, AFTPSShooterPlayerState* AttackerPS);
+	void ProcessSequentialEliminations(ESpecialElimType& OutElimType, AFTPSShooterPlayerState* AttackerPS);
+	void ProcessStreaks(ESpecialElimType& OutElimType, AFTPSShooterPlayerState* AttackerPS, AFTPSShooterPlayerState* VictimPS);
+	void HandleFirstBlood(AFTPSShooterGameStateBase* GameState, ESpecialElimType& OutElimType, AFTPSShooterPlayerState* AttackerPS);
+	void UpdateLeaderStatus(AFTPSShooterGameStateBase* GameState, ESpecialElimType& OutElimType, AFTPSShooterPlayerState* AttackerPS, AFTPSShooterPlayerState* VictimPS);
 	bool HasSpecialElimTypes(const ESpecialElimType& SpecialElimType) const;
 };

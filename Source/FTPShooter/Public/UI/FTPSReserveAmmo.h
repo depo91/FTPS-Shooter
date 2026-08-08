@@ -1,17 +1,17 @@
-﻿// Copyright Epic Games, Inc. All Rights Reserved.
+// Copyright Epic Games, Inc. All Rights Reserved.
 
 #pragma once
 
 #include "CoreMinimal.h"
 #include "Blueprint/UserWidget.h"
-#include "ReserveAmmo.generated.h"
+#include "FTPSReserveAmmo.generated.h"
 
-class AWeapon;
+class AFTPSWeapon;
 class UTextBlock;
 class UImage;
 
 UCLASS()
-class FTPSHOOTER_API UReserveAmmo : public UUserWidget
+class FTPSHOOTER_API UFTPSReserveAmmo : public UUserWidget
 {
 	GENERATED_BODY()
 public:
@@ -36,5 +36,5 @@ private:
 	void OnRoundFired(int32 RoundsCurrent, int32 RoundsMax, int32 RoundsInReserve);
 	
 	UFUNCTION()
-	void OnWeaponFirstReplicated(AWeapon* Weapon, bool bTargetingPlayer);
+	void OnWeaponFirstReplicated(AFTPSWeapon* Weapon, bool bTargetingPlayer);
 };

@@ -1,10 +1,10 @@
-﻿// Copyright Epic Games, Inc. All Rights Reserved.
+// Copyright Epic Games, Inc. All Rights Reserved.
 
 #pragma once
 
 #include "CoreMinimal.h"
 #include "GameFramework/PlayerController.h"
-#include "ShooterPlayerController.generated.h"
+#include "FTPSShooterPlayerController.generated.h"
 
 class UInputAction;
 class UInputMappingContext;
@@ -13,11 +13,11 @@ struct FInputActionValue;
 DECLARE_DYNAMIC_MULTICAST_DELEGATE(FPlayerStateReplicated);
 
 UCLASS()
-class FTPSHOOTER_API AShooterPlayerController : public APlayerController
+class FTPSHOOTER_API AFTPSShooterPlayerController : public APlayerController
 {
 	GENERATED_BODY()
 public:
-	AShooterPlayerController();
+	AFTPSShooterPlayerController();
 	
 	UPROPERTY(BlueprintAssignable)
 	FPlayerStateReplicated OnPlayerStateReplicated;
@@ -45,9 +45,18 @@ private:
 	
 	UPROPERTY(EditAnywhere, Category = "FPS|Input")
 	TObjectPtr<UInputAction> JumpAction;
+
+	UPROPERTY(EditAnywhere, Category = "FPS|Input")
+	TObjectPtr<UInputAction> TogglePerspectiveAction;
+
+	UPROPERTY(EditAnywhere, Category = "FPS|Input")
+	TObjectPtr<UInputAction> AimAction;
 	
 	void Input_Crouch();
 	void Input_Jump();
 	void Input_Move(const FInputActionValue& InputActionValue);
 	void Input_Look(const FInputActionValue& InputActionValue);
+	void Input_TogglePerspective();
+	void Input_AimStarted();
+	void Input_AimEnded();
 };

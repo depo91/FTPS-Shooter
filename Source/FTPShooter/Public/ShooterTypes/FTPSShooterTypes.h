@@ -1,6 +1,6 @@
 #pragma once
 
-#include "ShooterTypes.generated.h"
+#include "FTPSShooterTypes.generated.h"
 
 UENUM(BlueprintType)
 enum class ETurningInPlace : uint8

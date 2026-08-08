@@ -1,10 +1,10 @@
-﻿// Copyright Epic Games, Inc. All Rights Reserved.
+// Copyright Epic Games, Inc. All Rights Reserved.
 
 
-#include "Health/HealthComponent.h"
+#include "Health/FTPSHealthComponent.h"
 #include "Net/UnrealNetwork.h"
 
-UHealthComponent::UHealthComponent()
+UFTPSHealthComponent::UFTPSHealthComponent()
 {
 	PrimaryComponentTick.bStartWithTickEnabled = false;
 	PrimaryComponentTick.bCanEverTick = false;
@@ -14,21 +14,21 @@ UHealthComponent::UHealthComponent()
 	MaxHealth = 100.f;
 }
 
-void UHealthComponent::GetLifetimeReplicatedProps(TArray<class FLifetimeProperty>& OutLifetimeProps) const
+void UFTPSHealthComponent::GetLifetimeReplicatedProps(TArray<class FLifetimeProperty>& OutLifetimeProps) const
 {
 	Super::GetLifetimeReplicatedProps(OutLifetimeProps);
 	
-	DOREPLIFETIME(UHealthComponent, DeathState);
-	DOREPLIFETIME_CONDITION(UHealthComponent, Health, COND_OwnerOnly);
-	DOREPLIFETIME_CONDITION(UHealthComponent, MaxHealth, COND_OwnerOnly);
+	DOREPLIFETIME(UFTPSHealthComponent, DeathState);
+	DOREPLIFETIME_CONDITION(UFTPSHealthComponent, Health, COND_OwnerOnly);
+	DOREPLIFETIME_CONDITION(UFTPSHealthComponent, MaxHealth, COND_OwnerOnly);
 }
 
-float UHealthComponent::GetHealthNormalized() const
+float UFTPSHealthComponent::GetHealthNormalized() const
 {
 	return (MaxHealth > 0.f) ? (Health / MaxHealth) : 0.f;
 }
 
-bool UHealthComponent::ChangeHealthByAmount(float Amount, AActor* Instigator)
+bool UFTPSHealthComponent::ChangeHealthByAmount(float Amount, AActor* Instigator)
 {
 	float OldValue = Health;
 	Health = FMath::Clamp(Health + Amount, 0.f, MaxHealth);
@@ -43,7 +43,7 @@ bool UHealthComponent::ChangeHealthByAmount(float Amount, AActor* Instigator)
 	return false;
 }
 
-void UHealthComponent::StartDeath()
+void UFTPSHealthComponent::StartDeath()
 {
 	if (DeathState != EDeathState::NotDead)
 	{
@@ -55,20 +55,20 @@ void UHealthComponent::StartDeath()
 	GetOwner()->ForceNetUpdate();
 }
 
-void UHealthComponent::ChangeMaxHealthByAmount(float Amount, AActor* Instigator)
+void UFTPSHealthComponent::ChangeMaxHealthByAmount(float Amount, AActor* Instigator)
 {
 	float OldValue = MaxHealth;
 	MaxHealth += Amount;
 	OnMaxHealthChanged.Broadcast(this, OldValue, MaxHealth, Instigator);
 }
 
-void UHealthComponent::BeginPlay()
+void UFTPSHealthComponent::BeginPlay()
 {
 	Super::BeginPlay();
 	
 }
 
-void UHealthComponent::OnRep_DeathState(EDeathState OldDeathState)
+void UFTPSHealthComponent::OnRep_DeathState(EDeathState OldDeathState)
 {
 	if (DeathState == EDeathState::DeathStarted)
 	{
@@ -76,12 +76,12 @@ void UHealthComponent::OnRep_DeathState(EDeathState OldDeathState)
 	}
 }
 
-void UHealthComponent::OnRep_Health(float OldValue)
+void UFTPSHealthComponent::OnRep_Health(float OldValue)
 {
 	OnHealthChanged.Broadcast(this, OldValue, Health, nullptr);
 }
 
-void UHealthComponent::OnRep_MaxHealth(float OldValue)
+void UFTPSHealthComponent::OnRep_MaxHealth(float OldValue)
 {
 	OnMaxHealthChanged.Broadcast(this, OldValue, MaxHealth, nullptr);
 }

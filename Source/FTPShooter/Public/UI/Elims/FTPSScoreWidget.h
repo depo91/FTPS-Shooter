@@ -1,16 +1,16 @@
-﻿// Copyright Epic Games, Inc. All Rights Reserved.
+// Copyright Epic Games, Inc. All Rights Reserved.
 
 #pragma once
 
 #include "CoreMinimal.h"
 #include "Blueprint/UserWidget.h"
-#include "ScoreWidget.generated.h"
+#include "FTPSScoreWidget.generated.h"
 
-class AShooterPlayerState;
+class AFTPSShooterPlayerState;
 class UTextBlock;
 
 UCLASS()
-class FTPSHOOTER_API UScoreWidget : public UUserWidget
+class FTPSHOOTER_API UFTPSScoreWidget : public UUserWidget
 {
 	GENERATED_BODY()
 public:
@@ -21,7 +21,7 @@ public:
 	
 private:
 	
-	AShooterPlayerState* GetPlayerState() const;
+	AFTPSShooterPlayerState* GetPlayerState() const;
 	
 	UFUNCTION()
 	void OnScoreChanged(int32 Score);

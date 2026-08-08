@@ -1,25 +1,25 @@
-﻿// Copyright Epic Games, Inc. All Rights Reserved.
+// Copyright Epic Games, Inc. All Rights Reserved.
 
 #pragma once
 
 #include "CoreMinimal.h"
-#include "Data/SpecialElimData.h"
+#include "Data/FTPSSpecialElimData.h"
 #include "GameFramework/PlayerState.h"
-#include "ShooterPlayerState.generated.h"
+#include "FTPSShooterPlayerState.generated.h"
 
 
-class USpecialElim;
-class USpecialElimData;
+class UFTPSSpecialElim;
+class UFTPSSpecialElimData;
 enum class ESpecialElimType : uint16;
 
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FScoreChanged, int32, NewScore);
 
 UCLASS()
-class FTPSHOOTER_API AShooterPlayerState : public APlayerState
+class FTPSHOOTER_API AFTPSShooterPlayerState : public APlayerState
 {
 	GENERATED_BODY()
 public:
-	AShooterPlayerState();
+	AFTPSShooterPlayerState();
 	
 	UPROPERTY(BlueprintAssignable)
 	FScoreChanged OnScoreChanged;
@@ -53,10 +53,10 @@ public:
 	void Client_SpecialElim(const ESpecialElimType& SpecialElim, int32 SequentialElimCount, int32 StreakCount, int32 ElimScore);
 	
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "FPS|SpecialElims")
-	TObjectPtr<USpecialElimData> SpecialElimData;
+	TObjectPtr<UFTPSSpecialElimData> SpecialElimData;
 	
 	UPROPERTY(EditDefaultsOnly, Category = "FPS|SpecialElims")
-	TSubclassOf<USpecialElim> SpecialElimWidgetClass;
+	TSubclassOf<UFTPSSpecialElim> SpecialElimWidgetClass;
 
 	UPROPERTY(EditDefaultsOnly, Category = "FPS|SpecialElims")
 	float ElimDisplayTime;

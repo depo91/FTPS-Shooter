@@ -1,12 +1,12 @@
-﻿// Copyright Epic Games, Inc. All Rights Reserved.
+// Copyright Epic Games, Inc. All Rights Reserved.
 
 #pragma once
 
 #include "CoreMinimal.h"
 #include "GameplayTagContainer.h"
 #include "GameFramework/Actor.h"
-#include "ShooterTypes/ShooterTypes.h"
-#include "Weapon.generated.h"
+#include "ShooterTypes/FTPSShooterTypes.h"
+#include "FTPSWeapon.generated.h"
 
 class USkeletalMeshComponent;
 class APawn;
@@ -14,12 +14,12 @@ class UMaterialInterface;
 class UMaterialInstanceDynamic;
 
 UCLASS()
-class FTPSHOOTER_API AWeapon : public AActor
+class FTPSHOOTER_API AFTPSWeapon : public AActor
 {
 	GENERATED_BODY()
 
 public:
-	AWeapon();
+	AFTPSWeapon();
 	virtual void OnRep_Instigator() override;
 
 	USkeletalMeshComponent* GetMesh1P() const;
@@ -32,7 +32,7 @@ protected:
 	virtual void BeginPlay() override;
 
 protected:
-	UPROPERTY(EditAnywhere, Category = "FPS|WeaponType")
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "FPS|WeaponType")
 	FGameplayTag WeaponType;
 
 public:

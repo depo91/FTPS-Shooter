@@ -1,17 +1,17 @@
-﻿// Copyright Epic Games, Inc. All Rights Reserved.
+// Copyright Epic Games, Inc. All Rights Reserved.
 
 #pragma once
 
 #include "CoreMinimal.h"
 #include "Blueprint/UserWidget.h"
-#include "SpecialElim.generated.h"
+#include "FTPSSpecialElim.generated.h"
 
 
 class UImage;
 class UTextBlock;
 
 UCLASS()
-class FTPSHOOTER_API USpecialElim : public UUserWidget
+class FTPSHOOTER_API UFTPSSpecialElim : public UUserWidget
 {
 	GENERATED_BODY()
 public:

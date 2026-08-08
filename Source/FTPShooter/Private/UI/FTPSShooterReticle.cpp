@@ -1,13 +1,13 @@
-﻿// Copyright Epic Games, Inc. All Rights Reserved.
+// Copyright Epic Games, Inc. All Rights Reserved.
 
 
-#include "UI/ShooterReticle.h"
+#include "UI/FTPSShooterReticle.h"
 
 #include "Character/FTPShooterCharacter.h"
-#include "Combat/CombatComponent.h"
+#include "Combat/FTPSCombatComponent.h"
 #include "Components/Image.h"
 #include "Materials/MaterialInstanceDynamic.h"
-#include "Weapon/Weapon.h"
+#include "Weapon/FTPSWeapon.h"
 
 namespace Ammo
 {
@@ -22,7 +22,7 @@ namespace Reticle
 	const FName Inner_RGBA = FName("Inner_RGBA");
 }
 
-void UShooterReticle::NativeOnInitialized()
+void UFTPSShooterReticle::NativeOnInitialized()
 {
 	Super::NativeOnInitialized();
 	
@@ -39,14 +39,14 @@ void UShooterReticle::NativeOnInitialized()
 	
 	AFTPShooterCharacter* ShooterCharacter = Cast<AFTPShooterCharacter>(GetOwningPlayer()->GetPawn());
 	if (!IsValid(ShooterCharacter)) return;
-	UCombatComponent* Combat = UCombatComponent::FindCombatComponent(ShooterCharacter);
+	UFTPSCombatComponent* Combat = UFTPSCombatComponent::FindCombatComponent(ShooterCharacter);
 	if (!IsValid(Combat)) return;
 	
 	OnPossessedPawnChanged(nullptr, ShooterCharacter);
 	
 	if (ShooterCharacter->HasWeaponFirstReplicated())
 	{
-		AWeapon* Weapon = IPlayerInterface::Execute_GetCurrentWeapon(ShooterCharacter);
+		AFTPSWeapon* Weapon = IFTPSPlayerInterface::Execute_GetCurrentWeapon(ShooterCharacter);
 		if (IsValid(Weapon))
 		{
 			OnReticleChanged(Weapon->GetReticleDynamicMaterialInstance(), Weapon->ReticleParams, Combat->bHitPlayer);
@@ -59,14 +59,14 @@ void UShooterReticle::NativeOnInitialized()
 	}
 	if (ShooterCharacter->HasAuthority())
 	{
-		AWeapon* Weapon = IPlayerInterface::Execute_GetCurrentWeapon(ShooterCharacter);
+		AFTPSWeapon* Weapon = IFTPSPlayerInterface::Execute_GetCurrentWeapon(ShooterCharacter);
 		if (!IsValid(Weapon)) return;
 		OnReticleChanged(Weapon->GetReticleDynamicMaterialInstance(), Weapon->ReticleParams, Combat->bHitPlayer);
 		OnAmmoCounterChanged(Weapon->GetAmmoCounterDynamicMaterialInstance(), Weapon->Ammo, Weapon->MagCapacity);
 	}
 }
 
-void UShooterReticle::NativeTick(const FGeometry& MyGeometry, float InDeltaTime)
+void UFTPSShooterReticle::NativeTick(const FGeometry& MyGeometry, float InDeltaTime)
 {
 	Super::NativeTick(MyGeometry, InDeltaTime);
 	
@@ -88,9 +88,9 @@ void UShooterReticle::NativeTick(const FGeometry& MyGeometry, float InDeltaTime)
 	}
 }
 
-void UShooterReticle::OnPossessedPawnChanged(APawn* OldPawn, APawn* NewPawn)
+void UFTPSShooterReticle::OnPossessedPawnChanged(APawn* OldPawn, APawn* NewPawn)
 {
-	UCombatComponent* OldPawnCombat = UCombatComponent::FindCombatComponent(OldPawn);
+	UFTPSCombatComponent* OldPawnCombat = UFTPSCombatComponent::FindCombatComponent(OldPawn);
 	if (IsValid(OldPawnCombat))
 	{
 		OldPawnCombat->OnReticleChanged.RemoveDynamic(this, &ThisClass::OnReticleChanged);
@@ -99,7 +99,7 @@ void UShooterReticle::OnPossessedPawnChanged(APawn* OldPawn, APawn* NewPawn)
 		OldPawnCombat->OnAimingStatusChanged.RemoveDynamic(this, &ThisClass::OnAimingStatusChanged);
 		OldPawnCombat->OnTargetingPlayerStatusChanged.RemoveDynamic(this, &ThisClass::OnTargetingPlayerStatusChanged);
 	}
-	UCombatComponent* NewPawnCombat = UCombatComponent::FindCombatComponent(NewPawn);
+	UFTPSCombatComponent* NewPawnCombat = UFTPSCombatComponent::FindCombatComponent(NewPawn);
 	if (IsValid(NewPawnCombat))
 	{
 		Image_Reticle->SetRenderOpacity(1.f);
@@ -112,13 +112,13 @@ void UShooterReticle::OnPossessedPawnChanged(APawn* OldPawn, APawn* NewPawn)
 	}
 }
 
-void UShooterReticle::OnWeaponFirstReplicated(AWeapon* Weapon, bool bIsTargetingPlayer)
+void UFTPSShooterReticle::OnWeaponFirstReplicated(AFTPSWeapon* Weapon, bool bIsTargetingPlayer)
 {
 	OnReticleChanged(Weapon->GetReticleDynamicMaterialInstance(), Weapon->ReticleParams, bIsTargetingPlayer);
 	OnAmmoCounterChanged(Weapon->GetAmmoCounterDynamicMaterialInstance(), Weapon->Ammo, Weapon->MagCapacity);
 }
 
-void UShooterReticle::OnReticleChanged(UMaterialInstanceDynamic* ReticleDynMatInst, const FReticleParams& ReticleParams, bool bCurrentlyTargetingPlayer)
+void UFTPSShooterReticle::OnReticleChanged(UMaterialInstanceDynamic* ReticleDynMatInst, const FReticleParams& ReticleParams, bool bCurrentlyTargetingPlayer)
 {
 	CurrentReticleParams = ReticleParams;
 	CurrentReticle_DynMatInst = ReticleDynMatInst;
@@ -133,7 +133,7 @@ void UShooterReticle::OnReticleChanged(UMaterialInstanceDynamic* ReticleDynMatIn
 	OnTargetingPlayerStatusChanged(bCurrentlyTargetingPlayer);
 }
 
-void UShooterReticle::OnAmmoCounterChanged(UMaterialInstanceDynamic* AmmoCounterDynMatInst, int32 RoundsCurrent,
+void UFTPSShooterReticle::OnAmmoCounterChanged(UMaterialInstanceDynamic* AmmoCounterDynMatInst, int32 RoundsCurrent,
 	int32 RoundsMax)
 {
 	CurrentAmmoCounter_DynMatInst = AmmoCounterDynMatInst;
@@ -148,7 +148,7 @@ void UShooterReticle::OnAmmoCounterChanged(UMaterialInstanceDynamic* AmmoCounter
 	}
 }
 
-void UShooterReticle::OnRoundFired(int32 RoundsCurrent, int32 RoundsMax, int32 RoundsInReserve)
+void UFTPSShooterReticle::OnRoundFired(int32 RoundsCurrent, int32 RoundsMax, int32 RoundsInReserve)
 {
 	_BaseCornerScaleFactor_RoundFired += CurrentReticleParams.ScaleFactor_RoundFired;
 	_BaseShapeCutFactor_RoundFired += CurrentReticleParams.ShapeCutFactor_RoundFired;
@@ -160,12 +160,12 @@ void UShooterReticle::OnRoundFired(int32 RoundsCurrent, int32 RoundsMax, int32 R
 	}
 }
 
-void UShooterReticle::OnAimingStatusChanged(bool bIsAiming)
+void UFTPSShooterReticle::OnAimingStatusChanged(bool bIsAiming)
 {
 	bAiming = bIsAiming;
 }
 
-void UShooterReticle::OnTargetingPlayerStatusChanged(bool bTargeting)
+void UFTPSShooterReticle::OnTargetingPlayerStatusChanged(bool bTargeting)
 {
 	bTargetingPlayer = bTargeting;
 	if (CurrentReticle_DynMatInst.IsValid())

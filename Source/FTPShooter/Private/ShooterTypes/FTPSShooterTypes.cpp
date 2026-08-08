@@ -1,1 +1,1 @@
-#include "ShooterTypes/ShooterTypes.h"
+#include "ShooterTypes/FTPSShooterTypes.h"

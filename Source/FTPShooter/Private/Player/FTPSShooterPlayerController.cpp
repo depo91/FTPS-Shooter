@@ -1,6 +1,6 @@
 // Copyright Epic Games, Inc. All Rights Reserved.
 
-#include "Player/ShooterPlayerController.h"
+#include "Player/FTPSShooterPlayerController.h"
 
 #include "Character/FTPShooterCharacter.h"
 #include "EnhancedInputComponent.h"
@@ -9,29 +9,29 @@
 #include "GameFramework/CharacterMovementComponent.h"
 #include "InputActionValue.h"
 
-AShooterPlayerController::AShooterPlayerController()
+AFTPSShooterPlayerController::AFTPSShooterPlayerController()
 {
 	bPawnAlive = true;
 }
 
-void AShooterPlayerController::BeginPlay()
+void AFTPSShooterPlayerController::BeginPlay()
 {
 	Super::BeginPlay();
 }
 
-void AShooterPlayerController::OnRep_PlayerState()
+void AFTPSShooterPlayerController::OnRep_PlayerState()
 {
 	Super::OnRep_PlayerState();
 	OnPlayerStateReplicated.Broadcast();
 }
 
-void AShooterPlayerController::OnPossess(APawn* InPawn)
+void AFTPSShooterPlayerController::OnPossess(APawn* InPawn)
 {
 	Super::OnPossess(InPawn);
 	bPawnAlive = IsValid(InPawn);
 }
 
-void AShooterPlayerController::SetupInputComponent()
+void AFTPSShooterPlayerController::SetupInputComponent()
 {
 	Super::SetupInputComponent();
 
@@ -61,10 +61,20 @@ void AShooterPlayerController::SetupInputComponent()
 		{
 			ShooterInputComponent->BindAction(JumpAction, ETriggerEvent::Started, this, &ThisClass::Input_Jump);
 		}
+		if (TogglePerspectiveAction)
+		{
+			ShooterInputComponent->BindAction(TogglePerspectiveAction, ETriggerEvent::Started, this, &ThisClass::Input_TogglePerspective);
+		}
+		if (AimAction)
+		{
+			ShooterInputComponent->BindAction(AimAction, ETriggerEvent::Started, this, &ThisClass::Input_AimStarted);
+			ShooterInputComponent->BindAction(AimAction, ETriggerEvent::Completed, this, &ThisClass::Input_AimEnded);
+			ShooterInputComponent->BindAction(AimAction, ETriggerEvent::Canceled, this, &ThisClass::Input_AimEnded);
+		}
 	}
 }
 
-void AShooterPlayerController::Input_Crouch()
+void AFTPSShooterPlayerController::Input_Crouch()
 {
 	if (ACharacter* ControlledCharacter = GetCharacter())
 	{
@@ -75,7 +85,7 @@ void AShooterPlayerController::Input_Crouch()
 	}
 }
 
-void AShooterPlayerController::Input_Jump()
+void AFTPSShooterPlayerController::Input_Jump()
 {
 	if (ACharacter* ControlledCharacter = GetCharacter())
 	{
@@ -83,7 +93,7 @@ void AShooterPlayerController::Input_Jump()
 	}
 }
 
-void AShooterPlayerController::Input_Move(const FInputActionValue& InputActionValue)
+void AFTPSShooterPlayerController::Input_Move(const FInputActionValue& InputActionValue)
 {
 	if (AFTPShooterCharacter* ShooterCharacter = Cast<AFTPShooterCharacter>(GetCharacter()))
 	{
@@ -92,11 +102,35 @@ void AShooterPlayerController::Input_Move(const FInputActionValue& InputActionVa
 	}
 }
 
-void AShooterPlayerController::Input_Look(const FInputActionValue& InputActionValue)
+void AFTPSShooterPlayerController::Input_Look(const FInputActionValue& InputActionValue)
 {
 	if (AFTPShooterCharacter* ShooterCharacter = Cast<AFTPShooterCharacter>(GetCharacter()))
 	{
 		const FVector2D InputAxisVector = InputActionValue.Get<FVector2D>();
 		ShooterCharacter->DoLook(InputAxisVector.X, InputAxisVector.Y);
+	}
+}
+
+void AFTPSShooterPlayerController::Input_TogglePerspective()
+{
+	if (AFTPShooterCharacter* ShooterCharacter = Cast<AFTPShooterCharacter>(GetCharacter()))
+	{
+		ShooterCharacter->TogglePerspective();
+	}
+}
+
+void AFTPSShooterPlayerController::Input_AimStarted()
+{
+	if (AFTPShooterCharacter* ShooterCharacter = Cast<AFTPShooterCharacter>(GetCharacter()))
+	{
+		ShooterCharacter->StartAim();
+	}
+}
+
+void AFTPSShooterPlayerController::Input_AimEnded()
+{
+	if (AFTPShooterCharacter* ShooterCharacter = Cast<AFTPShooterCharacter>(GetCharacter()))
+	{
+		ShooterCharacter->StopAim();
 	}
 }

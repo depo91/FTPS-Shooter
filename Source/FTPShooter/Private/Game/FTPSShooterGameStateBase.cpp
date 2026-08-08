@@ -1,25 +1,25 @@
 // Copyright Epic Games, Inc. All Rights Reserved.
 
-#include "Game/ShooterGameStateBase.h"
+#include "Game/FTPSShooterGameStateBase.h"
 
-#include "Player/ShooterPlayerState.h"
+#include "Player/FTPSShooterPlayerState.h"
 
-bool AShooterGameStateBase::HasFirstBloodBeenHad() const
+bool AFTPSShooterGameStateBase::HasFirstBloodBeenHad() const
 {
 	return bFirstBloodBeenHad;
 }
 
-AShooterPlayerState* AShooterGameStateBase::GetSoleLeader() const
+AFTPSShooterPlayerState* AFTPSShooterGameStateBase::GetSoleLeader() const
 {
 	return SoleLeader;
 }
 
-bool AShooterGameStateBase::IsTiedForTheLead(const AShooterPlayerState* PlayerState) const
+bool AFTPSShooterGameStateBase::IsTiedForTheLead(const AFTPSShooterPlayerState* PlayerState) const
 {
-	return IsValid(PlayerState) && CurrentLeaders.Contains(const_cast<AShooterPlayerState*>(PlayerState));
+	return IsValid(PlayerState) && CurrentLeaders.Contains(const_cast<AFTPSShooterPlayerState*>(PlayerState));
 }
 
-void AShooterGameStateBase::UpdateLeader()
+void AFTPSShooterGameStateBase::UpdateLeader()
 {
 	CurrentLeaders.Reset();
 	SoleLeader = nullptr;
@@ -28,7 +28,7 @@ void AShooterGameStateBase::UpdateLeader()
 
 	for (APlayerState* BasePlayerState : PlayerArray)
 	{
-		AShooterPlayerState* ShooterPlayerState = Cast<AShooterPlayerState>(BasePlayerState);
+		AFTPSShooterPlayerState* ShooterPlayerState = Cast<AFTPSShooterPlayerState>(BasePlayerState);
 		if (!IsValid(ShooterPlayerState))
 		{
 			continue;

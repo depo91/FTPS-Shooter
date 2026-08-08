@@ -4,26 +4,26 @@
 
 #include "CoreMinimal.h"
 #include "GameFramework/Character.h"
-#include "Interfaces/PlayerInterface.h"
+#include "Interfaces/FTPSPlayerInterface.h"
 #include "Logging/LogMacros.h"
 #include "FTPShooterCharacter.generated.h"
 
 class USpringArmComponent;
 class UCameraComponent;
 class USkeletalMeshComponent;
-class UCombatComponent;
+class UFTPSCombatComponent;
 class UInputAction;
-class AWeapon;
+class AFTPSWeapon;
 
 DECLARE_LOG_CATEGORY_EXTERN(LogTemplateCharacter, Log, All);
-DECLARE_DYNAMIC_MULTICAST_DELEGATE_TwoParams(FWeaponFirstReplicated, AWeapon*, Weapon, bool, bTargetingPlayer);
+DECLARE_DYNAMIC_MULTICAST_DELEGATE_TwoParams(FWeaponFirstReplicated, AFTPSWeapon*, Weapon, bool, bTargetingPlayer);
 
 /**
  *  A simple player-controllable third person character
  *  Implements a controllable orbiting camera
  */
 UCLASS(abstract)
-class AFTPShooterCharacter : public ACharacter, public IPlayerInterface
+class AFTPShooterCharacter : public ACharacter, public IFTPSPlayerInterface
 {
 	GENERATED_BODY()
 
@@ -43,10 +43,9 @@ class AFTPShooterCharacter : public ACharacter, public IPlayerInterface
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category="Components", meta = (AllowPrivateAccess = "true"))
 	USkeletalMeshComponent* FirstPersonMesh;
 
-	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category="Components", meta = (AllowPrivateAccess = "true"))
-	TObjectPtr<UCombatComponent> Combat;
-	
 protected:
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category="FPS|Combat")
+	TObjectPtr<UFTPSCombatComponent> Combat;
 
 	/** Start the character in first person instead of third person */
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category="Camera")
@@ -130,7 +129,7 @@ public:
 	virtual USkeletalMeshComponent* GetMesh1P_Implementation() const override;
 	virtual USkeletalMeshComponent* GetMesh3P_Implementation() const override;
 	virtual void WeaponReplicated_Implementation() override;
-	virtual AWeapon* GetCurrentWeapon_Implementation() override;
+	virtual AFTPSWeapon* GetCurrentWeapon_Implementation() override;
 	virtual int32 GetReserveAmmo_Implementation() const override;
 	virtual void Notify_CycleWeapon_Implementation() override;
 	virtual void Notify_ReloadWeapon_Implementation() override;
