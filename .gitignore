@@ -1,0 +1,12 @@
+.vs/
+.idea/
+Binaries/
+DerivedDataCache/
+Intermediate/
+Saved/
+*.VC.db
+*.VC.opendb
+*.suo
+*.user
+*.userosscache
+*.sln.docstates
