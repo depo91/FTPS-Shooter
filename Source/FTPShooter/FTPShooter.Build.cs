@@ -13,7 +13,7 @@ public class FTPShooter : ModuleRules
 			"CoreUObject",
 			"Engine",
 			"InputCore",
-			"EnhancedInput",
+			"GameplayTags",
 			"AIModule",
 			"StateTreeModule",
 			"GameplayStateTreeModule",
@@ -21,7 +21,10 @@ public class FTPShooter : ModuleRules
 			"Slate"
 		});
 
-		PrivateDependencyModuleNames.AddRange(new string[] { });
+		PrivateDependencyModuleNames.AddRange(new string[] {
+			"EnhancedInput",
+			"SlateCore"
+		});
 
 		PublicIncludePaths.AddRange(new string[] {
 			"FTPShooter",
