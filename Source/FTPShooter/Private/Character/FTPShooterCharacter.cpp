@@ -61,18 +61,30 @@ AFTPShooterCharacter::AFTPShooterCharacter()
 	FirstPersonCamera->SetRelativeLocation(FirstPersonCameraOffset);
 	FirstPersonCamera->FieldOfView = FirstPersonFOV;
 
-	FirstPersonMesh = CreateDefaultSubobject<USkeletalMeshComponent>(TEXT("FirstPersonMesh"));
-	FirstPersonMesh->SetupAttachment(FirstPersonCamera);
-	FirstPersonMesh->SetCollisionEnabled(ECollisionEnabled::NoCollision);
-	FirstPersonMesh->SetCastShadow(false);
-	FirstPersonMesh->SetRelativeLocation(FirstPersonMeshOffset);
-	FirstPersonMesh->SetVisibility(true, true);
+	Mesh1P = CreateDefaultSubobject<USkeletalMeshComponent>(TEXT("Mesh1P"));
+	Mesh1P->SetupAttachment(FirstPersonCamera);
+	Mesh1P->SetCollisionEnabled(ECollisionEnabled::NoCollision);
+	Mesh1P->SetOnlyOwnerSee(true);
+	Mesh1P->SetOwnerNoSee(false);
+	Mesh1P->SetCastShadow(false);
+	Mesh1P->bCastDynamicShadow = false;
+	Mesh1P->bReceivesDecals = false;
+	Mesh1P->VisibilityBasedAnimTickOption = EVisibilityBasedAnimTickOption::OnlyTickPoseWhenRendered;
+	Mesh1P->PrimaryComponentTick.TickGroup = TG_PrePhysics;
+	Mesh1P->SetRelativeLocation(FirstPersonMeshOffset);
+	Mesh1P->SetVisibility(true, true);
+
+	Mesh3P = GetMesh();
+	Mesh3P->SetOnlyOwnerSee(false);
+	Mesh3P->SetOwnerNoSee(false);
+	Mesh3P->bReceivesDecals = false;
 
 	Combat = CreateDefaultSubobject<UFTPSCombatComponent>(TEXT("Combat"));
 	Combat->SetIsReplicated(true);
 
 	TogglePerspectiveKey = EKeys::V;
 	ToggleAimKey = EKeys::RightMouseButton;
+	DefaultFieldOfView = 90.0f;
 
 	// Note: The skeletal mesh and anim blueprint references on the Mesh component (inherited from Character) 
 	// are set in the derived blueprint asset named ThirdPersonCharacter (to avoid direct content references in C++)
@@ -82,6 +94,7 @@ void AFTPShooterCharacter::BeginPlay()
 {
 	Super::BeginPlay();
 
+	FirstPersonCamera->SetFieldOfView(DefaultFieldOfView);
 	CameraBoom->TargetArmLength = ThirdPersonCameraDistance;
 	CameraBoom->SetRelativeLocation(ThirdPersonCameraBoomOffset);
 	FirstPersonCamera->SetRelativeLocation(FirstPersonCameraOffset);
@@ -166,17 +179,24 @@ void AFTPShooterCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInpu
 FName AFTPShooterCharacter::GetWeaponAttachPoint_Implementation(const FGameplayTag& WeaponType) const
 {
 	checkf(Combat && Combat->WeaponData, TEXT("No Weapon Data Asset - Please fill out BP_ShooterCharacter"));
-	return Combat->WeaponData->GripPoints.FindChecked(WeaponType);
+
+	if (const FName* AttachPoint = Combat->WeaponData->GripPoints.Find(WeaponType))
+	{
+		return *AttachPoint;
+	}
+
+	UE_LOG(LogTemp, Warning, TEXT("GetWeaponAttachPoint: No GripPoint entry found for WeaponType '%s' in DA_WeaponData. Falling back to 'hand_r'. Set WeaponType on the weapon Blueprint and/or add a GripPoints entry to fix this."), *WeaponType.ToString());
+	return TEXT("hand_r");
 }
 
 USkeletalMeshComponent* AFTPShooterCharacter::GetMesh1P_Implementation() const
 {
-	return FirstPersonMesh;
+	return Mesh1P;
 }
 
 USkeletalMeshComponent* AFTPShooterCharacter::GetMesh3P_Implementation() const
 {
-	return GetMesh();
+	return Mesh3P;
 }
 
 void AFTPShooterCharacter::WeaponReplicated_Implementation()
@@ -250,11 +270,19 @@ void AFTPShooterCharacter::Input_FireWeapon_Released()
 void AFTPShooterCharacter::Input_Aim_Pressed()
 {
 	Combat->Initiate_Aim_Pressed();
+	if (bIsFirstPersonPerspective)
+	{
+		OnAim(true);
+	}
 }
 
 void AFTPShooterCharacter::Input_Aim_Released()
 {
 	Combat->Initiate_Aim_Released();
+	if (bIsFirstPersonPerspective)
+	{
+		OnAim(false);
+	}
 }
 
 void AFTPShooterCharacter::DoMove(float Right, float Forward)
@@ -331,12 +359,24 @@ void AFTPShooterCharacter::SetPerspective(bool bEnableFirstPerson)
 			FirstPersonCamera->Activate();
 		}
 
-		GetMesh()->SetVisibility(false, true);
-
-		if (FirstPersonMesh)
+		Mesh3P->SetOnlyOwnerSee(false);
+		Mesh3P->SetOwnerNoSee(false);
+		Mesh3P->SetVisibility(true, true);
+		if (!FirstPersonHiddenBoneName.IsNone())
 		{
-			FirstPersonMesh->SetVisibility(FirstPersonMesh->GetSkeletalMeshAsset() != nullptr, true);
+			Mesh3P->HideBoneByName(FirstPersonHiddenBoneName, EPhysBodyOp::PBO_None);
 		}
+		if (!FirstPersonHiddenUpperBodyBoneName.IsNone())
+		{
+			Mesh3P->HideBoneByName(FirstPersonHiddenUpperBodyBoneName, EPhysBodyOp::PBO_None);
+		}
+
+		if (Mesh1P)
+		{
+			Mesh1P->SetVisibility(Mesh1P->GetSkeletalMeshAsset() != nullptr, true);
+		}
+
+		OnAim(bIsAiming);
 	}
 	else
 	{
@@ -354,12 +394,24 @@ void AFTPShooterCharacter::SetPerspective(bool bEnableFirstPerson)
 			FollowCamera->Activate();
 		}
 
-		GetMesh()->SetVisibility(true, true);
-
-		if (FirstPersonMesh)
+		Mesh3P->SetOnlyOwnerSee(false);
+		Mesh3P->SetOwnerNoSee(false);
+		Mesh3P->SetVisibility(true, true);
+		if (!FirstPersonHiddenBoneName.IsNone())
 		{
-			FirstPersonMesh->SetVisibility(false, true);
+			Mesh3P->UnHideBoneByName(FirstPersonHiddenBoneName);
 		}
+		if (!FirstPersonHiddenUpperBodyBoneName.IsNone())
+		{
+			Mesh3P->UnHideBoneByName(FirstPersonHiddenUpperBodyBoneName);
+		}
+
+		if (Mesh1P)
+		{
+			Mesh1P->SetVisibility(false, true);
+		}
+
+		OnAim(false);
 	}
 
 	UpdateCameraState(0.0f, true);
@@ -419,23 +471,23 @@ void AFTPShooterCharacter::UpdateCameraState(float DeltaSeconds, bool bInstant)
 
 void AFTPShooterCharacter::RefreshFirstPersonMesh()
 {
-	if (!FirstPersonMesh || !GetMesh())
+	if (!Mesh1P || !GetMesh())
 	{
 		return;
 	}
 
 	if (bAutoCopyThirdPersonMeshToFirstPersonMesh
-		&& FirstPersonMesh->GetSkeletalMeshAsset() == nullptr
+		&& Mesh1P->GetSkeletalMeshAsset() == nullptr
 		&& GetMesh()->GetSkeletalMeshAsset() != nullptr)
 	{
-		FirstPersonMesh->SetSkeletalMesh(GetMesh()->GetSkeletalMeshAsset());
+		Mesh1P->SetSkeletalMesh(GetMesh()->GetSkeletalMeshAsset());
 	}
 
 	if (bAutoCopyThirdPersonAnimClassToFirstPersonMesh
-		&& FirstPersonMesh->GetAnimClass() == nullptr
+		&& Mesh1P->GetAnimClass() == nullptr
 		&& GetMesh()->GetAnimClass() != nullptr)
 	{
-		FirstPersonMesh->SetAnimInstanceClass(GetMesh()->GetAnimClass());
+		Mesh1P->SetAnimInstanceClass(GetMesh()->GetAnimClass());
 	}
 
 	if (UWorld* World = GetWorld())
@@ -447,7 +499,7 @@ void AFTPShooterCharacter::RefreshFirstPersonMesh()
 
 		if (bIsEditorPreviewWorld)
 		{
-			FirstPersonMesh->SetVisibility(FirstPersonMesh->GetSkeletalMeshAsset() != nullptr, true);
+			Mesh1P->SetVisibility(Mesh1P->GetSkeletalMeshAsset() != nullptr, true);
 		}
 	}
 }

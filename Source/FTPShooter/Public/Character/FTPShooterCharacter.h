@@ -39,13 +39,23 @@ class AFTPShooterCharacter : public ACharacter, public IFTPSPlayerInterface
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category="Components", meta = (AllowPrivateAccess = "true"))
 	UCameraComponent* FirstPersonCamera;
 
-	/** Optional first person mesh, intended for arms-only meshes */
+	/** First person mesh, intended for arms-only meshes */
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category="Components", meta = (AllowPrivateAccess = "true"))
-	USkeletalMeshComponent* FirstPersonMesh;
+	USkeletalMeshComponent* Mesh1P;
+
+	/** Third person mesh alias (Character inherited mesh) */
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category="Components", meta = (AllowPrivateAccess = "true"))
+	USkeletalMeshComponent* Mesh3P;
 
 protected:
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category="FPS|Combat")
 	TObjectPtr<UFTPSCombatComponent> Combat;
+
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category="FPS|Aiming")
+	float DefaultFieldOfView;
+
+	UFUNCTION(BlueprintImplementableEvent)
+	void OnAim(bool bAiming);
 
 	/** Start the character in first person instead of third person */
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category="Camera")
@@ -90,6 +100,14 @@ protected:
 	/** When enabled, the first person mesh auto-copies the third person anim class if none is assigned */
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category="Camera")
 	bool bAutoCopyThirdPersonAnimClassToFirstPersonMesh = false;
+
+	/** Bone hidden only in FPS so full body stays visible without head clipping. */
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category="Camera")
+	FName FirstPersonHiddenBoneName = TEXT("head");
+
+	/** Optional upper-body root bone to hide in FPS (keeps legs visible, removes torso clipping). */
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category="Camera")
+	FName FirstPersonHiddenUpperBodyBoneName = TEXT("spine_01");
 
 	/** Whether the local character is currently using the first person camera */
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category="Camera")
@@ -235,7 +253,7 @@ public:
 	FORCEINLINE class UCameraComponent* GetFirstPersonCamera() const { return FirstPersonCamera; }
 
 	/** Returns FirstPersonMesh subobject **/
-	FORCEINLINE class USkeletalMeshComponent* GetFirstPersonMesh() const { return FirstPersonMesh; }
+	FORCEINLINE class USkeletalMeshComponent* GetFirstPersonMesh() const { return Mesh1P; }
 
 protected:
 
